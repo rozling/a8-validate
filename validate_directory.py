@@ -63,25 +63,24 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
 
 def main():
     parser = argparse.ArgumentParser(description="Validate Assimil8or preset files in a directory")
-    parser.add_argument("preset_dir", help="Directory containing preset .yml files")
-    parser.add_argument("--sample-dir", help="Directory containing sample files (optional)")
+    parser.add_argument("directory", help="Directory containing preset .yml files and samples")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
     
     try:
-        yml_files = find_yml_files(args.preset_dir)
-        sample_dir = Path(args.sample_dir) if args.sample_dir else None
+        yml_files = find_yml_files(args.directory)
+        sample_dir = Path(args.directory)
         
         if not yml_files:
-            print(f"No .yml files found in {args.preset_dir}")
+            print("No .yml files found in {}".format(args.directory))
             return
         
-        print(f"Found {len(yml_files)} preset files. Starting validation...")
+        print("Found {} preset files. Starting validation...".format(len(yml_files)))
         
         results = []
         for file_path in yml_files:
             if args.verbose:
-                print(f"Validating {file_path.name}... ", end="", flush=True)
+                print("Validating {}... ".format(file_path.name), end="", flush=True)
             
             success, message = validate_preset_file(file_path, sample_dir)
             results.append((file_path, success, message))
@@ -92,17 +91,17 @@ def main():
         
         # Print summary
         valid_count = sum(1 for _, success, _ in results if success)
-        print(f"\nValidation complete: {valid_count}/{len(results)} files valid")
+        print("\nValidation complete: {}/{}  files valid".format(valid_count, len(results)))
         
         # Print details for invalid files
         invalid_files = [(path, msg) for path, success, msg in results if not success]
         if invalid_files:
             print("\nInvalid files:")
             for path, message in invalid_files:
-                print(f"  {path.name}: {message}")
+                print("  {}: {}".format(path.name, message))
     
     except Exception as e:
-        print(f"Error: {e}")
+        print("Error: {}".format(e))
         return 1
     
     return 0
