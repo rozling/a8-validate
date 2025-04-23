@@ -215,8 +215,8 @@ class TestYAMLParser:
             # Check Channel 2
             channel2 = preset["Channel 2"]
             assert channel2["ChannelMode"] == 1   # This should remain an integer
-            assert channel2["Pitch"] == "+7.00"   # Check as string
-            assert channel2["Level"] == "-6.0"    # Check as string
+            assert abs(channel2["Pitch"] - 7.0) < 1e-6  # Check as float
+            assert abs(channel2["Level"] + 6.0) < 1e-6  # Check as float
             
             # Check Zone in Channel 2
             assert channel2["Zone 1"]["Sample"] == "Acid_1.wav"
