@@ -11,6 +11,7 @@ This Python library provides comprehensive validation for Assimil8or preset YAML
 - Cross-reference validation
 - File system validation for sample files
 - Robust error reporting
+- Directory-wide preset validation script
 
 ## Installation
 
@@ -30,7 +31,7 @@ This Python library provides comprehensive validation for Assimil8or preset YAML
 
 ## Usage
 
-### Validating a Preset File
+### Validating Individual Preset Files
 
 ```python
 from a8_validate.yaml_parser import parse_yaml_file
@@ -59,6 +60,27 @@ def validate_preset_file(file_path, sample_folder_path):
 # Example usage
 validate_preset_file('path/to/your/preset.yml', 'path/to/sample/folder')
 ```
+
+### Directory Validation Script
+
+The `validate_directory.py` script allows you to validate multiple preset files in a directory:
+
+```bash
+# Basic usage: validate all .yml files in a directory
+python validate_directory.py /path/to/presets
+
+# Validate presets with their associated sample files
+python validate_directory.py /path/to/presets --sample-dir /path/to/samples
+
+# Verbose mode for detailed output
+python validate_directory.py /path/to/presets -v
+```
+
+#### Command-line Options
+
+- `preset_dir`: (Required) Directory containing preset .yml files to validate
+- `--sample-dir`: (Optional) Directory containing sample files for validation
+- `--verbose`, `-v`: Enable detailed output during validation
 
 ### Handling Specific Validation Errors
 
