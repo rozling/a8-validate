@@ -29,7 +29,7 @@ class CVInputReferenceError(CrossReferenceError):
 
 
 # Regex patterns for validation
-CV_INPUT_PATTERN = r'^(Off|[1-8][A-C])$'
+CV_INPUT_PATTERN = r'^(Off|[0-8][A-C])$'
 
 
 def validate_relationships(preset_data):
@@ -104,14 +104,14 @@ def _validate_crossfade_groups(preset, channels):
             # Check that there are at least 2 channels in the group
             if len(channel_numbers) < 2:
                 raise CrossReferenceError(
-                    f"Crossfade Group {group} must have at least 2 channels, but only has {len(channel_numbers)}"
+                    f"Crossfade Group {group} with XfadeGroup parameter must have at least 2 channels, but only has {len(channel_numbers)}"
                 )
             
             # Check that the corresponding CV input exists
             cv_param = f"Xfade{group}CV"
             if cv_param not in preset:
                 raise CrossReferenceError(
-                    f"{cv_param} is required for Crossfade Group {group}"
+                    f"{cv_param} is required for XfadeGroup {group}"
                 )
 
 
@@ -240,8 +240,8 @@ def _validate_sample_boundaries(channel_data, channel_number):
     if 'SampleStart' in channel_data and 'SampleEnd' in channel_data:
         if channel_data['SampleStart'] >= channel_data['SampleEnd']:
             raise CrossReferenceError(
-                f"Channel {channel_number}: SampleStart ({channel_data['SampleStart']}) "
-                f"must be less than SampleEnd ({channel_data['SampleEnd']})"
+                f"Channel {channel_number}: SampleStart ({channel_data['SampleStart']}) is greater than "
+                f"SampleEnd ({channel_data['SampleEnd']})"
             )
 
 
@@ -323,6 +323,6 @@ def _validate_zone_relationships(zone_data, channel_number, zone_number):
     if 'SampleStart' in zone_data and 'SampleEnd' in zone_data:
         if zone_data['SampleStart'] >= zone_data['SampleEnd']:
             raise CrossReferenceError(
-                f"Channel {channel_number}, Zone {zone_number}: SampleStart ({zone_data['SampleStart']}) "
-                f"must be less than SampleEnd ({zone_data['SampleEnd']})"
+                f"Channel {channel_number}, Zone {zone_number}: SampleStart ({zone_data['SampleStart']}) is greater than "
+                f"SampleEnd ({zone_data['SampleEnd']})"
             )

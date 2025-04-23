@@ -44,7 +44,7 @@ def validate_sample_files(preset_data, folder_path):
     
     # Validate each sample file
     for context, sample_filename in sample_references:
-        _validate_sample_file(folder_path, sample_filename, context)
+        _validate_sample_file(preset_data, folder_path, sample_filename, context)
     
     # Check total memory usage
     total_memory = calculate_total_memory(preset_data, folder_path)
@@ -88,11 +88,12 @@ def _collect_sample_references(preset_data):
     return sample_references
 
 
-def _validate_sample_file(folder_path, sample_filename, context):
+def _validate_sample_file(preset_data, folder_path, sample_filename, context):
     """
     Validate a sample file.
     
     Args:
+        preset_data: Dictionary containing the preset data
         folder_path: Path to the folder containing the sample files
         sample_filename: Filename of the sample
         context: Context for error messages
@@ -110,7 +111,7 @@ def _validate_sample_file(folder_path, sample_filename, context):
     # Check if file is a valid WAV file
     if not sample_filename.lower().endswith('.wav'):
         raise InvalidSampleFormatError(
-            f"Sample file '{sample_filename}' referenced in {context} is not a WAV file"
+            f"Sample file '{sample_filename}' referenced in {context} is not a WAV file format"
         )
     
     # Try to open as WAV
@@ -146,7 +147,7 @@ def _validate_sample_file(folder_path, sample_filename, context):
     except wave.Error:
         raise InvalidSampleFormatError(
             f"Sample file '{sample_filename}' referenced in {context} "
-            f"is not a valid WAV file"
+            f"is not a valid WAV file format"
         )
     except Exception as e:
         raise FileSystemValidationError(

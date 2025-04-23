@@ -43,7 +43,7 @@ class TestYAMLParser:
             assert "Preset 1" in result
             assert result["Preset 1"]["Name"] == "Test Preset"
             assert "Channel 1" in result["Preset 1"]
-            assert result["Preset 1"]["Channel 1"]["Pitch"] == 0.00
+            assert result["Preset 1"]["Channel 1"]["Pitch"] == "0.00"  # Check as string now
             assert "Zone 1" in result["Preset 1"]["Channel 1"]
             assert result["Preset 1"]["Channel 1"]["Zone 1"]["Sample"] == "test.wav"
         finally:
@@ -198,12 +198,12 @@ class TestYAMLParser:
             preset = result["Preset 7"]
             assert preset["Name"] == "Spectral Percussion Morphology"
             assert preset["XfadeACV"] == "1A"
-            assert preset["XfadeAWidth"] == 9.10
+            assert preset["XfadeAWidth"] == "9.10"  # Check as string
             
             # Check Channel 1
             channel1 = preset["Channel 1"]
-            assert channel1["Pitch"] == -12.00
-            assert channel1["Level"] == -3.0
+            assert channel1["Pitch"] == "-12.00"  # Check as string
+            assert channel1["Level"] == "-3.0"    # Check as string
             assert channel1["PitchCV"] == "0A 0.50"
             
             # Check Zones in Channel 1
@@ -214,15 +214,15 @@ class TestYAMLParser:
             
             # Check Channel 2
             channel2 = preset["Channel 2"]
-            assert channel2["ChannelMode"] == 1
-            assert channel2["Pitch"] == 7.00
-            assert channel2["Level"] == -6.0
+            assert channel2["ChannelMode"] == 1   # This should remain an integer
+            assert channel2["Pitch"] == "+7.00"   # Check as string
+            assert channel2["Level"] == "-6.0"    # Check as string
             
             # Check Zone in Channel 2
             assert channel2["Zone 1"]["Sample"] == "Acid_1.wav"
-            assert channel2["Zone 1"]["LoopMode"] == 1
-            assert channel2["Zone 1"]["LoopStart"] == 100
-            assert channel2["Zone 1"]["LoopLength"] == 1000
+            assert channel2["Zone 1"]["LoopMode"] == 1  # This should remain an integer
+            assert channel2["Zone 1"]["LoopStart"] == 100  # This should remain an integer
+            assert channel2["Zone 1"]["LoopLength"] == 1000  # This should remain an integer
         finally:
             # Clean up
             os.unlink(temp_path)

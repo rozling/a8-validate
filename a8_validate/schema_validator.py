@@ -96,8 +96,8 @@ ZONE_SCHEMA = {
 }
 
 # Regex patterns for validation
-CV_INPUT_PATTERN = r'^(Off|[1-8][A-C])$'
-CV_INPUT_WITH_AMOUNT_PATTERN = r'^(Off|[1-8][A-C]) [-+]?[0-9]*\.?[0-9]+$'
+CV_INPUT_PATTERN = r'^(Off|[0-8][A-C])$'
+CV_INPUT_WITH_AMOUNT_PATTERN = r'^(Off|[0-8][A-C]) [-+]?[0-9]*\.?[0-9]+$'
 VOLTAGE_PATTERN = r'^[-+]?[0-9]*\.?[0-9]+$'
 PM_SOURCE_PATTERN = r'^([1-8]|Sample Input (Left|Right))$'
 
@@ -233,7 +233,7 @@ def _validate_parameter_value(param, value, schema, context=""):
             )
         if 'max' in schema and value > schema['max']:
             raise InvalidValueError(
-                f"Parameter {param}{context_str} must be at most {schema['max']}, got {value}"
+                f"Parameter {param}{context_str} must be at most {schema['max']}, got {value} (outside allowed range)"
             )
         if 'values' in schema and value not in schema['values']:
             raise InvalidValueError(
@@ -243,15 +243,15 @@ def _validate_parameter_value(param, value, schema, context=""):
     elif param_type == 'float':
         if not isinstance(value, (int, float)):
             raise InvalidValueError(
-                f"Parameter {param}{context_str} must be a number, got {type(value).__name__}"
+                f"Parameter {param}{context_str} must be a float, got {type(value).__name__}"
             )
         if 'min' in schema and value < schema['min']:
             raise InvalidValueError(
-                f"Parameter {param}{context_str} must be at least {schema['min']}, got {value}"
+                f"Parameter {param}{context_str} must be at least {schema['min']}, got {value} (outside allowed range)"
             )
         if 'max' in schema and value > schema['max']:
             raise InvalidValueError(
-                f"Parameter {param}{context_str} must be at most {schema['max']}, got {value}"
+                f"Parameter {param}{context_str} must be at most {schema['max']}, got {value} (outside allowed range)"
             )
     
     elif param_type == 'cv_input':
@@ -294,11 +294,11 @@ def _validate_parameter_value(param, value, schema, context=""):
             float_val = float(value)
             if 'min' in schema and float_val < schema['min']:
                 raise InvalidValueError(
-                    f"Parameter {param}{context_str} must be at least {schema['min']}, got {value}"
+                    f"Parameter {param}{context_str} must be at least {schema['min']}, got {value} (outside allowed range)"
                 )
             if 'max' in schema and float_val > schema['max']:
                 raise InvalidValueError(
-                    f"Parameter {param}{context_str} must be at most {schema['max']}, got {value}"
+                    f"Parameter {param}{context_str} must be at most {schema['max']}, got {value} (outside allowed range)"
                 )
         except ValueError:
             raise InvalidValueError(

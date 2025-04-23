@@ -11,6 +11,8 @@ from a8_validate.file_system_validator import (
     SampleFileNotFoundError,
     InvalidSampleFormatError,
     MemoryLimitExceededError,
+    get_sample_length,
+    calculate_total_memory
 )
 
 
@@ -109,7 +111,7 @@ class TestFileSystemValidator:
             assert "test.txt" in str(exc_info.value)
             assert "format" in str(exc_info.value).lower()
 
-    def test_total_memory_validation(self):
+    def test_total_memory_validation(self, monkeypatch):
         """Test validation of total memory usage for all samples."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Mock large sample files by having the validator calculate their size differently
@@ -142,19 +144,18 @@ class TestFileSystemValidator:
             
             # Mock the calculate_total_memory function to return a value greater than the limit
             # This is needed because our dummy WAV files are actually tiny
-            with pytest.monkeypatch.context() as m:
-                # 500MB, which exceeds the 422MB limit
-                m.setattr("a8_validate.file_system_validator.calculate_total_memory", lambda preset, folder: 500 * 1024 * 1024)
-                
-                # Validation should raise MemoryLimitExceededError
-                with pytest.raises(MemoryLimitExceededError) as exc_info:
-                    validate_sample_files(preset, temp_dir)
-                
-                # Error should mention the memory limit
-                assert "422MB" in str(exc_info.value) or "422 MB" in str(exc_info.value)
-                assert "memory" in str(exc_info.value).lower()
+            monkeypatch.setattr("a8_validate.file_system_validator.calculate_total_memory", 
+                                lambda preset, folder: 500 * 1024 * 1024)
+            
+            # Validation should raise MemoryLimitExceededError
+            with pytest.raises(MemoryLimitExceededError) as exc_info:
+                validate_sample_files(preset, temp_dir)
+            
+            # Error should mention the memory limit
+            assert "422MB" in str(exc_info.value) or "422 MB" in str(exc_info.value)
+            assert "memory" in str(exc_info.value).lower()
 
-    def test_sample_length_validation(self):
+    def test_sample_length_validation(self, monkeypatch):
         """Test validation of sample length against referenced positions."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create a sample file
@@ -181,19 +182,19 @@ class TestFileSystemValidator:
             }
             
             # Mock the get_sample_length function to return a specific length
-            with pytest.monkeypatch.context() as m:
-                m.setattr("a8_validate.file_system_validator.get_sample_length", lambda file_path: 100000)
-                
-                # Validation should raise FileSystemValidationError
-                with pytest.raises(FileSystemValidationError) as exc_info:
-                    validate_sample_files(preset, temp_dir)
-                
-                # Error should mention the loop points and sample length
-                assert "LoopStart" in str(exc_info.value)
-                assert "exceeds" in str(exc_info.value).lower()
-                assert "length" in str(exc_info.value).lower()
+            monkeypatch.setattr("a8_validate.file_system_validator.get_sample_length", 
+                               lambda file_path: 100000)
+            
+            # Validation should raise FileSystemValidationError
+            with pytest.raises(FileSystemValidationError) as exc_info:
+                validate_sample_files(preset, temp_dir)
+            
+            # Error should mention the loop points and sample length
+            assert "LoopStart" in str(exc_info.value)
+            assert "exceeds" in str(exc_info.value).lower()
+            assert "length" in str(exc_info.value).lower()
 
-    def test_complex_preset_validation(self):
+    def test_complex_preset_validation(self, monkeypatch):
         """Test validation of a complex preset with multiple samples and zones."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create multiple sample files
@@ -246,11 +247,11 @@ class TestFileSystemValidator:
             }
             
             # Mock the get_sample_length function to return a specific length
-            with pytest.monkeypatch.context() as m:
-                m.setattr("a8_validate.file_system_validator.get_sample_length", lambda file_path: 10000)
-                
-                # Validation should succeed without raising any exceptions
-                validate_sample_files(complex_preset, temp_dir)
+            monkeypatch.setattr("a8_validate.file_system_validator.get_sample_length", 
+                               lambda file_path: 10000)
+            
+            # Validation should succeed without raising any exceptions
+            validate_sample_files(complex_preset, temp_dir)
             
             # Now add a missing sample to test failure case
             complex_preset["Preset 7"]["Channel 4"] = {
