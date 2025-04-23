@@ -18,12 +18,37 @@ from a8_validate.file_system_validator import validate_sample_files, FileSystemV
 
 
 def find_yml_files(directory: str) -> List[Path]:
-    """Find all .yml files in the specified directory."""
+    """
+    Find all .yml files in the specified directory, excluding system files.
+    
+    Ignores:
+    - folderprefs.yml
+    - lastfolder.yml
+    - lastpreset.yml
+    - midi*.yml
+    - ._* (hidden files)
+    """
     dir_path = Path(directory)
     if not dir_path.exists() or not dir_path.is_dir():
         raise ValueError(f"Directory not found: {directory}")
     
-    return list(dir_path.glob("*.yml"))
+    # Get all .yml files
+    all_yml_files = list(dir_path.glob("*.yml"))
+    
+    # Define files to ignore
+    ignore_patterns = [
+        "folderprefs.yml",
+        "lastfolder.yml",
+        "lastpreset.yml",
+    ]
+    
+    # Filter out ignored files
+    return [
+        f for f in all_yml_files 
+        if (f.name not in ignore_patterns and 
+            not f.name.startswith("midi") and 
+            not f.name.startswith("._"))
+    ]
 
 
 def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:

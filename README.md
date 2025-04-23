@@ -26,6 +26,10 @@ pip install -r requirements.txt
 python validate_directory.py /path/to/presets --sample-dir /path/to/samples
 ```
 
+## Changelog
+- 23 April 2025: Refactored the `find_yml_files` function to ignore system files:
+  - folderprefs.yml, lastfolder.yml, lastpreset.yml, midi*.yml, and hidden files starting with ._.
+
 ### Contributing
 Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
 
