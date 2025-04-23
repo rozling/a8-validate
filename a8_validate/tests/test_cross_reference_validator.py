@@ -50,15 +50,84 @@ class TestCrossReferenceValidator:
         # Validation should succeed without raising any exceptions
         validate_relationships(valid_preset)
 
-    def test_loop_mode_without_loop_start(self):
-        """Test validation of a channel with loop mode on but missing loop start."""
-        preset_missing_loop_start = {
+    def test_partial_loop_parameters(self):
+        """Test validation of partial loop parameter definitions."""
+        # Test with only LoopStart
+        preset_with_only_start = {
             "Preset 1": {
                 "Name": "Test Preset",
                 "Channel 1": {
                     "Pitch": 0.00,
                     "LoopMode": 1,  # Loop mode on
-                    # Missing LoopStart
+                    "LoopStart": 100,  # Only LoopStart provided
+                    "Zone 1": {
+                        "Sample": "test.wav"
+                    }
+                }
+            }
+        }
+        
+        # Validation should raise LoopConfigurationError
+        with pytest.raises(LoopConfigurationError) as exc_info:
+            validate_relationships(preset_with_only_start)
+        
+        # Error should mention that both LoopStart and LoopLength must be defined together
+        assert "LoopStart" in str(exc_info.value)
+        assert "LoopLength" in str(exc_info.value)
+        
+        # Test with only LoopLength
+        preset_with_only_length = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 1,  # Loop mode on
+                    "LoopLength": 1000,  # Only LoopLength provided
+                    "Zone 1": {
+                        "Sample": "test.wav"
+                    }
+                }
+            }
+        }
+        
+        # Validation should raise LoopConfigurationError
+        with pytest.raises(LoopConfigurationError) as exc_info:
+            validate_relationships(preset_with_only_length)
+        
+        # Error should mention that both LoopStart and LoopLength must be defined together
+        assert "LoopStart" in str(exc_info.value)
+        assert "LoopLength" in str(exc_info.value)
+
+    def test_loop_mode_with_default_full_sample_loop(self):
+        """Test validation of a channel with loop mode on but no explicit loop parameters."""
+        preset_with_default_loop = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 1,  # Loop mode on
+                    # No explicit LoopStart or LoopLength
+                    "Zone 1": {
+                        "Sample": "test.wav"
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising exceptions
+        validate_relationships(preset_with_default_loop)
+
+    def test_loop_mode_flag_consistency(self):
+        """Test validation of LoopLengthIsEnd flag consistency with LoopMode."""
+        # Test LoopMode 1 (Start/End) with incorrect LoopLengthIsEnd
+        preset_mode1_incorrect_flag = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 1,  # Start/End mode
+                    "LoopLengthIsEnd": 0,  # Incorrect flag
+                    "LoopStart": 100,
                     "LoopLength": 1000,
                     "Zone 1": {
                         "Sample": "test.wav"
@@ -69,22 +138,22 @@ class TestCrossReferenceValidator:
         
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
-            validate_relationships(preset_missing_loop_start)
+            validate_relationships(preset_mode1_incorrect_flag)
         
-        # Error should mention missing LoopStart
-        assert "LoopStart" in str(exc_info.value)
-        assert "LoopMode" in str(exc_info.value)
-
-    def test_loop_mode_without_loop_length(self):
-        """Test validation of a channel with loop mode on but missing loop length."""
-        preset_missing_loop_length = {
+        # Error should mention LoopMode and LoopLengthIsEnd
+        assert "LoopMode 1" in str(exc_info.value)
+        assert "LoopLengthIsEnd" in str(exc_info.value)
+        
+        # Test LoopMode 2 (Start/Length) with incorrect LoopLengthIsEnd
+        preset_mode2_incorrect_flag = {
             "Preset 1": {
                 "Name": "Test Preset",
                 "Channel 1": {
                     "Pitch": 0.00,
-                    "LoopMode": 1,  # Loop mode on
+                    "LoopMode": 2,  # Start/Length mode
+                    "LoopLengthIsEnd": 1,  # Incorrect flag
                     "LoopStart": 100,
-                    # Missing LoopLength
+                    "LoopLength": 1000,
                     "Zone 1": {
                         "Sample": "test.wav"
                     }
@@ -94,11 +163,11 @@ class TestCrossReferenceValidator:
         
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
-            validate_relationships(preset_missing_loop_length)
+            validate_relationships(preset_mode2_incorrect_flag)
         
-        # Error should mention missing LoopLength
-        assert "LoopLength" in str(exc_info.value)
-        assert "LoopMode" in str(exc_info.value)
+        # Error should mention LoopMode and LoopLengthIsEnd
+        assert "LoopMode 2" in str(exc_info.value)
+        assert "LoopLengthIsEnd" in str(exc_info.value)
 
     def test_invalid_zone_voltage_ranges(self):
         """Test validation of zones with overlapping or invalid voltage ranges."""
