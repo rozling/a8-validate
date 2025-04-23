@@ -208,9 +208,9 @@ class TestYAMLParser:
             
             # Check Zones in Channel 1
             assert channel1["Zone 1"]["Sample"] == "BD_Thump_1.wav"
-            assert channel1["Zone 1"]["MinVoltage"] == "+5.00"
+            assert abs(channel1["Zone 1"]["MinVoltage"] - 5.0) < 1e-6
             assert channel1["Zone 2"]["Sample"] == "BD_Elec_1.wav"
-            assert channel1["Zone 2"]["MinVoltage"] == "+2.50"
+            assert abs(channel1["Zone 2"]["MinVoltage"] - 2.5) < 1e-6
             
             # Check Channel 2
             channel2 = preset["Channel 2"]
