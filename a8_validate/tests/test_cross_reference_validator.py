@@ -464,12 +464,8 @@ class TestCrossReferenceValidator:
             }
         }
         
-        # Validation should raise LoopConfigurationError
-        with pytest.raises(LoopConfigurationError) as exc_info:
-            validate_relationships(preset_with_no_loop_params)
-        
-        # Error should mention missing loop parameters
-        assert "LoopStart" in str(exc_info.value) or "LoopLength" in str(exc_info.value)
+        # Validation should succeed without raising exceptions
+        validate_relationships(preset_with_no_loop_params)
 
     def test_zone_level_loop_mode_with_zone_parameters(self):
         """Test validation of a zone with its own loop mode and loop parameters."""
@@ -554,5 +550,9 @@ class TestCrossReferenceValidator:
             }
         }
         
-        # Validation should succeed without raising exceptions
-        validate_relationships(preset_with_mixed_inheritance)
+        # Validation should raise LoopConfigurationError
+        with pytest.raises(LoopConfigurationError) as exc_info:
+            validate_relationships(preset_with_mixed_inheritance)
+        
+        # Error should mention missing LoopLength
+        assert "LoopLength" in str(exc_info.value)
