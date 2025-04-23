@@ -34,16 +34,16 @@ class TestYAMLParser:
         try:
             # Parse the file
             result = parse_yaml_file(temp_path)
-            
+
             # Check that parsing was successful
             assert result is not None
             assert isinstance(result, dict)
-            
+
             # Check that the content was parsed correctly
             assert "Preset 1" in result
             assert result["Preset 1"]["Name"] == "Test Preset"
             assert "Channel 1" in result["Preset 1"]
-            assert result["Preset 1"]["Channel 1"]["Pitch"] == "0.00"  # Check as string now
+            assert result["Preset 1"]["Channel 1"]["Pitch"] == 0.0  # Check as float now
             assert "Zone 1" in result["Preset 1"]["Channel 1"]
             assert result["Preset 1"]["Channel 1"]["Zone 1"]["Sample"] == "test.wav"
         finally:
@@ -189,21 +189,21 @@ class TestYAMLParser:
         try:
             # Parse the file
             result = parse_yaml_file(temp_path)
-            
+
             # Check that parsing was successful
             assert result is not None
             assert isinstance(result, dict)
-            
+
             # Check that the complex structure was parsed correctly
             preset = result["Preset 7"]
             assert preset["Name"] == "Spectral Percussion Morphology"
             assert preset["XfadeACV"] == "1A"
-            assert preset["XfadeAWidth"] == "9.10"  # Check as string
+            assert abs(preset["XfadeAWidth"] - 9.10) < 1e-6  # Check as float
             
             # Check Channel 1
             channel1 = preset["Channel 1"]
-            assert channel1["Pitch"] == "-12.00"  # Check as string
-            assert channel1["Level"] == "-3.0"    # Check as string
+            assert abs(channel1["Pitch"] + 12.00) < 1e-6  # Check as float
+            assert abs(channel1["Level"] + 3.0) < 1e-6    # Check as float
             assert channel1["PitchCV"] == "0A 0.50"
             
             # Check Zones in Channel 1
