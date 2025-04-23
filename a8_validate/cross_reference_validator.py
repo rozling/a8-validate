@@ -212,43 +212,52 @@ def _validate_loop_settings(channel_data, channel_number):
       2. Within individual zones (can override channel-level settings)
     
     Validation rules:
-    - At least one location (channel or any zone) must have LoopStart defined
-    - At least one location (channel or any zone) must have LoopLength defined
-    - If a zone has its own LoopMode, it can inherit parameters from the channel
+    - If loop parameters are explicitly provided, they must be consistent
+    - Absence of explicit loop parameters implies a default "full sample loop"
+    - Partial loop parameter definitions (only LoopStart or only LoopLength) are invalid
     
     Args:
         channel_data: Dictionary containing the channel data
         channel_number: Channel number
         
     Raises:
-        LoopConfigurationError: If required loop parameters are missing
+        LoopConfigurationError: If loop parameters are inconsistently defined
     """
     if 'LoopMode' in channel_data and channel_data['LoopMode'] != 0:
-        # Check if LoopStart and LoopLength are defined at channel level
+        # Check for explicit loop parameters
         channel_loop_start = channel_data.get('LoopStart')
         channel_loop_length = channel_data.get('LoopLength')
         
-        # Check if any zones have LoopStart and LoopLength
-        zone_loop_start = False
-        zone_loop_length = False
-        
+        # Check for zone-level loop parameters
+        zone_loop_params = []
         for key, value in channel_data.items():
             if key.startswith('Zone '):
-                if 'LoopStart' in value:
-                    zone_loop_start = True
-                if 'LoopLength' in value:
-                    zone_loop_length = True
+                if 'LoopStart' in value or 'LoopLength' in value:
+                    zone_loop_params.append(value)
         
-        # Require either channel-level or zone-level LoopStart and LoopLength
-        if not (channel_loop_start or zone_loop_start):
-            raise LoopConfigurationError(
-                f"Channel {channel_number} has LoopMode {channel_data['LoopMode']} but LoopStart is not defined"
-            )
-        
-        if not (channel_loop_length or zone_loop_length):
-            raise LoopConfigurationError(
-                f"Channel {channel_number} has LoopMode {channel_data['LoopMode']} but LoopLength is not defined"
-            )
+        # If explicit parameters exist, validate them
+        all_loop_params = [channel_data] + zone_loop_params
+        for params in all_loop_params:
+            # Check for partial loop parameter definitions
+            if ('LoopStart' in params) != ('LoopLength' in params):
+                raise LoopConfigurationError(
+                    f"Channel {channel_number}: LoopStart and LoopLength must be defined together"
+                )
+            
+            # Validate LoopLengthIsEnd flag consistency with LoopMode
+            if 'LoopLengthIsEnd' in params:
+                is_end = params['LoopLengthIsEnd']
+                loop_mode = params.get('LoopMode', channel_data.get('LoopMode'))
+                
+                if loop_mode == 1 and is_end != 1:
+                    raise LoopConfigurationError(
+                        f"Channel {channel_number}: LoopMode 1 requires LoopLengthIsEnd to be 1"
+                    )
+                
+                if loop_mode == 2 and is_end != 0:
+                    raise LoopConfigurationError(
+                        f"Channel {channel_number}: LoopMode 2 requires LoopLengthIsEnd to be 0"
+                    )
 
 
 def _validate_sample_boundaries(channel_data, channel_number):
