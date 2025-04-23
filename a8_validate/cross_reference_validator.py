@@ -199,28 +199,53 @@ def _validate_channel_relationships(channel_data, channel_number):
     
     # Validate each zone's internal relationships
     for zone_number, zone_data in zones.items():
-        _validate_zone_relationships(zone_data, channel_number, zone_number)
+        _validate_zone_relationships(zone_data, channel_data, channel_number, zone_number)
 
 
 def _validate_loop_settings(channel_data, channel_number):
     """
-    Validate loop settings in a channel.
+    Validate loop settings in a channel with parameter inheritance support.
+    
+    This method implements a flexible parameter inheritance model for loop settings:
+    - When LoopMode is enabled at the channel level, loop parameters can be defined:
+      1. At the channel level (applies to all zones)
+      2. Within individual zones (can override channel-level settings)
+    
+    Validation rules:
+    - At least one location (channel or any zone) must have LoopStart defined
+    - At least one location (channel or any zone) must have LoopLength defined
+    - If a zone has its own LoopMode, it can inherit parameters from the channel
     
     Args:
         channel_data: Dictionary containing the channel data
         channel_number: Channel number
         
     Raises:
-        LoopConfigurationError: If validation fails
+        LoopConfigurationError: If required loop parameters are missing
     """
     if 'LoopMode' in channel_data and channel_data['LoopMode'] != 0:
-        # LoopMode is on, so LoopStart and LoopLength must be defined
-        if 'LoopStart' not in channel_data:
+        # Check if LoopStart and LoopLength are defined at channel level
+        channel_loop_start = channel_data.get('LoopStart')
+        channel_loop_length = channel_data.get('LoopLength')
+        
+        # Check if any zones have LoopStart and LoopLength
+        zone_loop_start = False
+        zone_loop_length = False
+        
+        for key, value in channel_data.items():
+            if key.startswith('Zone '):
+                if 'LoopStart' in value:
+                    zone_loop_start = True
+                if 'LoopLength' in value:
+                    zone_loop_length = True
+        
+        # Require either channel-level or zone-level LoopStart and LoopLength
+        if not (channel_loop_start or zone_loop_start):
             raise LoopConfigurationError(
                 f"Channel {channel_number} has LoopMode {channel_data['LoopMode']} but LoopStart is not defined"
             )
         
-        if 'LoopLength' not in channel_data:
+        if not (channel_loop_length or zone_loop_length):
             raise LoopConfigurationError(
                 f"Channel {channel_number} has LoopMode {channel_data['LoopMode']} but LoopLength is not defined"
             )
@@ -291,12 +316,13 @@ def _validate_zone_voltage_ranges(zones, channel_number):
             )
 
 
-def _validate_zone_relationships(zone_data, channel_number, zone_number):
+def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_number):
     """
     Validate relationships within a zone.
     
     Args:
         zone_data: Dictionary containing the zone data
+        channel_data: Dictionary containing the channel data
         channel_number: Channel number
         zone_number: Zone number
         
@@ -305,15 +331,22 @@ def _validate_zone_relationships(zone_data, channel_number, zone_number):
     """
     # Validate loop settings if overridden at zone level
     if 'LoopMode' in zone_data and zone_data['LoopMode'] != 0:
-        # LoopMode is on at zone level, so LoopStart and LoopLength must be defined
-        # either at zone level or at channel level
-        if 'LoopStart' not in zone_data:
+        # Check if LoopStart and LoopLength are defined at zone level
+        zone_loop_start = zone_data.get('LoopStart')
+        zone_loop_length = zone_data.get('LoopLength')
+        
+        # Check if LoopStart and LoopLength are defined at channel level
+        channel_loop_start = channel_data.get('LoopStart')
+        channel_loop_length = channel_data.get('LoopLength')
+        
+        # Require either zone-level or channel-level LoopStart and LoopLength
+        if not (zone_loop_start or channel_loop_start):
             raise LoopConfigurationError(
                 f"Channel {channel_number}, Zone {zone_number} has LoopMode {zone_data['LoopMode']} "
                 f"but LoopStart is not defined"
             )
         
-        if 'LoopLength' not in zone_data:
+        if not (zone_loop_length or channel_loop_length):
             raise LoopConfigurationError(
                 f"Channel {channel_number}, Zone {zone_number} has LoopMode {zone_data['LoopMode']} "
                 f"but LoopLength is not defined"

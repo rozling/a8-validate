@@ -1,2 +1,20 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.env/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Pytest
+.pytest_cache/
+
+# Miscellaneous
 .DS_Store
-*.pyc
+*.log

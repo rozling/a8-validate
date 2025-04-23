@@ -356,3 +356,134 @@ class TestCrossReferenceValidator:
         
         # Validation should succeed without raising any exceptions
         validate_relationships(complex_crossfade_preset)
+
+    def test_loop_mode_with_loop_parameters_in_zone(self):
+        """Test validation of a channel with loop mode on but loop parameters defined in a zone."""
+        preset_with_loop_params_in_zone = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 1,  # Loop mode on at channel level
+                    # No LoopStart or LoopLength at channel level
+                    "Zone 1": {
+                        "Sample": "test.wav",
+                        "LoopStart": 100,     # LoopStart defined in zone
+                        "LoopLength": 1000    # LoopLength defined in zone
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising exceptions
+        validate_relationships(preset_with_loop_params_in_zone)
+
+    def test_loop_mode_with_no_loop_parameters_anywhere(self):
+        """Test validation of a channel with loop mode on but no loop parameters defined anywhere."""
+        preset_with_no_loop_params = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 1,  # Loop mode on at channel level
+                    # No LoopStart or LoopLength at channel level
+                    "Zone 1": {
+                        "Sample": "test.wav"
+                        # No LoopStart or LoopLength in zone either
+                    }
+                }
+            }
+        }
+        
+        # Validation should raise LoopConfigurationError
+        with pytest.raises(LoopConfigurationError) as exc_info:
+            validate_relationships(preset_with_no_loop_params)
+        
+        # Error should mention missing loop parameters
+        assert "LoopStart" in str(exc_info.value) or "LoopLength" in str(exc_info.value)
+
+    def test_zone_level_loop_mode_with_zone_parameters(self):
+        """Test validation of a zone with its own loop mode and loop parameters."""
+        preset_with_zone_loop_mode = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    # No LoopMode at channel level
+                    "Zone 1": {
+                        "Sample": "test.wav",
+                        "LoopMode": 1,        # Loop mode on at zone level
+                        "LoopStart": 100,     # LoopStart defined in same zone
+                        "LoopLength": 1000    # LoopLength defined in same zone
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising exceptions
+        validate_relationships(preset_with_zone_loop_mode)
+
+    def test_zone_level_loop_mode_with_channel_parameters(self):
+        """Test validation of a zone with loop mode that inherits loop parameters from channel."""
+        preset_with_inherited_params = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopStart": 100,     # LoopStart defined at channel level
+                    "LoopLength": 1000,   # LoopLength defined at channel level
+                    "Zone 1": {
+                        "Sample": "test.wav",
+                        "LoopMode": 1     # Loop mode on at zone level, should inherit parameters
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising exceptions
+        validate_relationships(preset_with_inherited_params)
+
+    def test_zone_level_loop_mode_with_no_parameters(self):
+        """Test validation of a zone with loop mode but no loop parameters anywhere."""
+        preset_with_zone_no_params = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    # No LoopStart or LoopLength at channel level
+                    "Zone 1": {
+                        "Sample": "test.wav",
+                        "LoopMode": 1     # Loop mode on at zone level
+                        # No LoopStart or LoopLength in zone
+                    }
+                }
+            }
+        }
+        
+        # Validation should raise LoopConfigurationError
+        with pytest.raises(LoopConfigurationError) as exc_info:
+            validate_relationships(preset_with_zone_no_params)
+        
+        # Error should mention missing loop parameters for zone
+        assert "Zone" in str(exc_info.value)
+        assert "LoopStart" in str(exc_info.value) or "LoopLength" in str(exc_info.value)
+
+    def test_mixed_parameter_inheritance(self):
+        """Test validation with mixed inheritance of loop parameters."""
+        preset_with_mixed_inheritance = {
+            "Preset 1": {
+                "Name": "Test Preset", 
+                "Channel 1": {
+                    "LoopMode": 1,        # Loop mode on at channel level
+                    "LoopStart": 100,     # LoopStart at channel level
+                    # No LoopLength at channel level
+                    "Zone 1": {
+                        "Sample": "test.wav",
+                        "LoopLength": 1000  # LoopLength in zone, should complement channel LoopStart
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising exceptions
+        validate_relationships(preset_with_mixed_inheritance)
