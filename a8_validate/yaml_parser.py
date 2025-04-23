@@ -28,28 +28,24 @@ class AssimPresetLoader(yaml.SafeLoader):
 
 # Custom constructor for numbers to preserve original format
 def construct_number(loader, node):
-    """Custom constructor for numeric values to preserve format."""
+    """Custom constructor for numeric values to ensure proper type conversion."""
     value = loader.construct_scalar(node)
     
-    # Check if the value is formatted as a float with + or - prefix
-    if re.match(r'^[+-]?\d+\.\d+$', value):
-        # Return as-is to preserve the original format
-        return value
-    
-    # Check if value is an integer
-    if re.match(r'^[+-]?\d+$', value):
-        try:
-            return int(value)
-        except ValueError:
-            return value
-        
-    # Try to convert to float if appropriate
+    # Try to convert to float first (handles both integers and floats)
     try:
-        if '.' in value:
-            return float(value)
-        else:
-            return int(value)
+        # Remove any leading/trailing whitespace and handle signed numbers
+        cleaned_value = value.strip()
+        
+        # Convert to float, which handles both integer and floating-point formats
+        numeric_value = float(cleaned_value)
+        
+        # If the float is a whole number, convert to int
+        if numeric_value.is_integer():
+            return int(numeric_value)
+        
+        return numeric_value
     except ValueError:
+        # If conversion fails, return the original value
         return value
 
 

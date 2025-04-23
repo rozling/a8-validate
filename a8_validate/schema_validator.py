@@ -102,6 +102,13 @@ VOLTAGE_PATTERN = r'^[-+]?[0-9]*\.?[0-9]+$'
 PM_SOURCE_PATTERN = r'^([1-8]|Sample Input (Left|Right))$'
 
 
+def _is_numeric_string(value):
+    """Check if a string represents a valid numeric value."""
+    if not isinstance(value, str):
+        return False
+    return bool(re.match(r'^[+-]?\d+(\.\d+)?$', value))
+
+
 def validate_preset(preset_data):
     """
     Validate a preset against the schema.
@@ -243,8 +250,10 @@ def _validate_parameter_value(param, value, schema, context=""):
     elif param_type == 'float':
         if not isinstance(value, (int, float)):
             raise InvalidValueError(
-                f"Parameter {param}{context_str} must be a float, got {type(value).__name__}"
+                f"Parameter {param}{context_str} must be a numeric type (int or float), got {type(value).__name__}. String representations are not allowed."
             )
+        
+        # Range validation for numeric types
         if 'min' in schema and value < schema['min']:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be at least {schema['min']}, got {value} (outside allowed range)"
