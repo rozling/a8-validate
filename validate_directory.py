@@ -59,11 +59,45 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
         Tuple of (success, message)
     """
     try:
-        # Parse the YAML file
-        preset_data = parse_yaml_file(str(file_path))
+        # Parse the YAML file with line number preservation
+        preset_data, line_map = parse_yaml_file(str(file_path), return_line_map=True)
         
         # Validate schema
-        validate_preset(preset_data)
+        try:
+            validate_preset(preset_data)
+        except SchemaValidationError as e:
+            # Attempt to extract parameter and preset name from error message
+            param_name = None
+            preset_key = None
+            msg = str(e)
+            import re
+            param_match = re.search(r'Parameter (\w+)', msg)
+            preset_match = re.search(r'in (Preset \d+)', msg)
+            if param_match:
+                param_name = param_match.group(1)
+            if preset_match:
+                preset_key = preset_match.group(1)
+            # Build path tuple
+            path = None
+            if preset_key and param_name:
+                path = (preset_key, param_name)
+            elif param_name:
+                path = (param_name,)
+            # Get line number from line_map if available
+            line_number = None
+            if path and path in line_map:
+                line_number = line_map[path]
+            else:
+                # Try to find line number by partial matching keys in line_map
+                for key_path in line_map.keys():
+                    if path and all(p == k for p, k in zip(path, key_path)):
+                        line_number = line_map[key_path]
+                        break
+            
+            if line_number:
+                raise SchemaValidationError(f"{e} (line {line_number})") from e
+            else:
+                raise
         
         # Validate cross-references
         validate_relationships(preset_data)
@@ -122,6 +156,7 @@ def main():
         invalid_files = [(path, msg) for path, success, msg in results if not success]
         if invalid_files:
             print("\nInvalid files:")
+            invalid_files.sort(key=lambda x: x[0].name)
             for path, message in invalid_files:
                 print("  {}: {}".format(path.name, message))
     
