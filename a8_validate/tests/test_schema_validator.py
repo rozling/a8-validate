@@ -40,6 +40,83 @@ class TestSchemaValidator:
         # Validation should succeed without raising any exceptions
         validate_preset(valid_preset)
 
+    def test_numeric_name(self):
+        """Test validation of a preset with a numeric Name parameter."""
+        numeric_name_preset = {
+            "Preset 13": {
+                "Name": 20,
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "Zone 1": {
+                        "Sample": "test.wav"
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising any exceptions
+        validate_preset(numeric_name_preset)
+
+    def test_name_with_special_characters(self):
+        """Test validation of a preset with a Name containing special characters."""
+        special_name_preset = {
+            "Preset @toms": {
+                "Name": "@toms",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "Zone 1": {
+                        "Sample": "test.wav"
+                    }
+                }
+            }
+        }
+        
+        # Validation should succeed without raising any exceptions
+        validate_preset(special_name_preset)
+
+    def test_channel_with_lin_am_and_exp_fm(self):
+        """Test that LinAM and ExpFM are accepted as valid channel parameters."""
+        channel = {
+            "Pitch": 0.00,
+            "LinAM": "1A 0.50",
+            "ExpFM": "2B -0.18",
+            "Zone 1": {
+                "Sample": "test.wav"
+            }
+        }
+        # Should not raise
+        validate_channel(channel, channel_number=1)
+
+        preset = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": channel
+            }
+        }
+        # Should not raise
+        validate_preset(preset)
+
+    def test_channel_with_exp_am(self):
+        """Test that ExpAM is accepted as a valid channel parameter."""
+        channel = {
+            "Pitch": 0.00,
+            "ExpAM": "3C 0.75",
+            "Zone 1": {
+                "Sample": "test.wav"
+            }
+        }
+        # Should not raise
+        validate_channel(channel, channel_number=1)
+
+        preset = {
+            "Preset 2": {
+                "Name": "Test Preset 2",
+                "Channel 1": channel
+            }
+        }
+        # Should not raise
+        validate_preset(preset)
+
     def test_missing_required_parameter(self):
         """Test validation of a preset missing a required parameter."""
         # Missing Name parameter, which is required
@@ -89,7 +166,7 @@ class TestSchemaValidator:
         preset_with_wrong_type = {
             "Preset 1": {
                 "Name": "Test Preset",
-                "XfadeAWidth": "9.10",  # Should be a float, not a string
+                "XfadeAWidth": "not_a_number",  # Invalid string, should raise error
                 "Channel 1": {
                     "Pitch": 0.00,
                     "Zone 1": {
