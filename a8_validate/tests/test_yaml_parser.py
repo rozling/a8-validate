@@ -202,21 +202,21 @@ class TestYAMLParser:
             
             # Check Channel 1
             channel1 = preset["Channel 1"]
-            assert abs(channel1["Pitch"] + 12.00) < 1e-6  # Check as float
-            assert abs(channel1["Level"] + 3.0) < 1e-6    # Check as float
+            assert abs(float(channel1["Pitch"]) + 12.00) < 1e-6  # Check as float
+            assert abs(float(channel1["Level"]) + 3.0) < 1e-6    # Check as float
             assert channel1["PitchCV"] == "0A 0.50"
             
             # Check Zones in Channel 1
             assert channel1["Zone 1"]["Sample"] == "BD_Thump_1.wav"
-            assert abs(channel1["Zone 1"]["MinVoltage"] - 5.0) < 1e-6
+            assert abs(float(channel1["Zone 1"]["MinVoltage"]) - 5.0) < 1e-6
             assert channel1["Zone 2"]["Sample"] == "BD_Elec_1.wav"
-            assert abs(channel1["Zone 2"]["MinVoltage"] - 2.5) < 1e-6
+            assert abs(float(channel1["Zone 2"]["MinVoltage"]) - 2.5) < 1e-6
             
             # Check Channel 2
             channel2 = preset["Channel 2"]
             assert channel2["ChannelMode"] == 1   # This should remain an integer
-            assert abs(channel2["Pitch"] - 7.0) < 1e-6  # Check as float
-            assert abs(channel2["Level"] + 6.0) < 1e-6  # Check as float
+            assert abs(float(channel2["Pitch"]) - 7.0) < 1e-6  # Check as float
+            assert abs(float(channel2["Level"]) + 6.0) < 1e-6  # Check as float
             
             # Check Zone in Channel 2
             assert channel2["Zone 1"]["Sample"] == "Acid_1.wav"
