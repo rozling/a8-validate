@@ -11,6 +11,7 @@ from a8_validate.cross_reference_validator import (
     ZoneVoltageRangeError,
     CVInputReferenceError,
 )
+from a8_validate.schema_validator import validate_preset
 
 
 class TestCrossReferenceValidator:
@@ -290,6 +291,26 @@ class TestCrossReferenceValidator:
         assert "SampleStart" in str(exc_info.value)
         assert "SampleEnd" in str(exc_info.value)
         assert "greater than" in str(exc_info.value).lower() or "after" in str(exc_info.value).lower()
+
+    def test_sample_start_end_as_strings(self):
+        """Ensure numeric strings are properly validated for sample boundaries."""
+        preset_with_string_values = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "SampleStart": "1000",
+                    "SampleEnd": "500",
+                    "Zone 1": {"Sample": "test.wav"},
+                },
+            }
+        }
+
+        # validate_preset converts numbers but previously didn't propagate them
+        validate_preset(preset_with_string_values)
+
+        with pytest.raises(CrossReferenceError):
+            validate_relationships(preset_with_string_values)
 
     def test_crossfade_group_membership(self):
         """Test validation of crossfade group configuration."""

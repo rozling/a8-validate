@@ -153,12 +153,18 @@ def validate_preset(preset_data, path=()):
                 # Validate preset parameter
                 if param not in PRESET_SCHEMA:
                     raise InvalidParameterError(f"Invalid preset parameter: {param}", path=path + (preset_key, param))
-                
+
                 # Special case: convert Name to string if not already
                 if param == "Name" and not isinstance(value, str):
                     value = str(value)
-                
-                _validate_parameter_value(param, value, PRESET_SCHEMA[param], context=f"{preset_key}", path=path + (preset_key, param))
+
+                preset_value[param] = _validate_parameter_value(
+                    param,
+                    value,
+                    PRESET_SCHEMA[param],
+                    context=f"{preset_key}",
+                    path=path + (preset_key, param),
+                )
         
         # Check for required parameters
         for param, schema in PRESET_SCHEMA.items():
@@ -189,7 +195,13 @@ def validate_channel(channel_data, channel_number, path=()):
             if param not in CHANNEL_SCHEMA:
                 raise InvalidParameterError(f"Invalid channel parameter: {param} in Channel {channel_number}", path=path + (param,))
             
-            _validate_parameter_value(param, value, CHANNEL_SCHEMA[param], context=f"Channel {channel_number}", path=path + (param,))
+            channel_data[param] = _validate_parameter_value(
+                param,
+                value,
+                CHANNEL_SCHEMA[param],
+                context=f"Channel {channel_number}",
+                path=path + (param,),
+            )
 
     # Enforce zone count and order
     zone_keys = [k for k in channel_data.keys() if k.startswith('Zone ')]
@@ -227,8 +239,12 @@ def validate_zone(zone_data, channel_number, zone_number, path=()):
                 path=path + (param,)
             )
         
-        _validate_parameter_value(
-            param, value, ZONE_SCHEMA[param], f"Channel {channel_number}, Zone {zone_number}", path=path + (param,)
+        zone_data[param] = _validate_parameter_value(
+            param,
+            value,
+            ZONE_SCHEMA[param],
+            f"Channel {channel_number}, Zone {zone_number}",
+            path=path + (param,),
         )
     
     # Check for required parameters
@@ -392,16 +408,18 @@ def _validate_parameter_value(param, value, schema, context="", path=()):
     
     elif param_type == 'pm_source':
         if isinstance(value, int) and 1 <= value <= 8:
-            return
+            return value
         
         if isinstance(value, str):
             if value in ['Sample Input Left', 'Sample Input Right']:
-                return
+                return value
             if value.isdigit() and 1 <= int(value) <= 8:
-                return
+                return int(value)
         
         raise InvalidValueError(
             f"Parameter {param}{context_str} must be a channel number (1-8) "
             f"or 'Sample Input Left/Right', got {value}",
             path=path
         )
+
+    return value
