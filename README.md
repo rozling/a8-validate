@@ -113,17 +113,11 @@ venv/bin/pytest -v --tb=short
 
 ### Contributing
 
-1. Format code with `black` (120 columns) and `isort`.
-2. Run `flake8 --max-line-length=120 --extend-ignore=E203,W503`.
-3. Run the full test suite (`venv/bin/pytest -v --tb=short`).
-4. Update `CHANGELOG.md` for user-facing changes.
-5. Submit a PR.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style guidelines, and the pull request process.
 
-See:
-
-- [CONTRIBUTING.md](CONTRIBUTING.md) for the complete workflow.
-- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.
-- [SECURITY.md](SECURITY.md) for responsible disclosure instructions.
-- [CHANGELOG.md](CHANGELOG.md) for release history.
+Additional resources:
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations
+- [SECURITY.md](SECURITY.md) for responsible disclosure instructions
+- [CHANGELOG.md](CHANGELOG.md) for release history
 
 Licensed under the MIT License. 
