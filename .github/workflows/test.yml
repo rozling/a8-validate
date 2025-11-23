@@ -16,21 +16,50 @@ jobs:
     
     steps:
     - uses: actions/checkout@v6
+    - name: Check for code changes
+      id: changes
+      uses: dorny/paths-filter@v2
+      with:
+        filters: |
+          code:
+            - 'a8_validate/**'
+            - 'validate_directory.py'
+            - 'scripts/**'
+            - 'requirements*.txt'
+            - 'pytest.ini'
+            - '.github/workflows/**'
+          docs:
+            - '*.md'
+            - 'LICENSE'
+            - 'CONTRIBUTING.md'
+            - 'CODE_OF_CONDUCT.md'
+            - 'SECURITY.md'
+            - '.cursorrules'
+            - '.vscode/**'
+    
     - name: Set up Python ${{ matrix.python-version }}
+      if: steps.changes.outputs.code == 'true'
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     
     - name: Install dependencies
+      if: steps.changes.outputs.code == 'true'
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
     
     - name: Run tests
+      if: steps.changes.outputs.code == 'true'
       run: |
         python -m pytest -v --tb=short
+    
+    - name: Skip message
+      if: steps.changes.outputs.code != 'true'
+      run: |
+        echo "Skipping tests - only documentation files changed"
     
     - name: Upload test results
       if: always()
