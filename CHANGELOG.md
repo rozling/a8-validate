@@ -15,6 +15,14 @@
   - `CONTRIBUTING.md`
   - `CODE_OF_CONDUCT.md`
   - `SECURITY.md`
+- Added GitHub issue templates:
+  - Bug report template
+  - Feature request template
+  - Validation issue template (for false positives/negatives)
+- Added Dependabot configuration for automated dependency updates:
+  - Weekly updates for Python dependencies (pip)
+  - Weekly updates for GitHub Actions
+  - Grouped updates for production and dev dependencies
 
 ### Fixed
 - Removed `wave` package from `requirements.txt` (it's a standard library module in Python)
