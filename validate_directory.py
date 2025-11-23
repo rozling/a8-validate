@@ -124,45 +124,69 @@ def main():
     parser = argparse.ArgumentParser(description="Validate Assimil8or preset files in a directory")
     parser.add_argument("directory", help="Directory containing preset .yml files and samples")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
+    parser.add_argument("--output", "-o", help="Output file for results (optional)")
     args = parser.parse_args()
+    
+    output_file = None
+    if args.output:
+        output_file = open(args.output, 'w')
+        def output_print(*args, **kwargs):
+            # Handle end and flush separately to avoid issues
+            end_char = kwargs.pop('end', '\n')
+            flush_flag = kwargs.pop('flush', False)
+            # Print to file
+            print(*args, **kwargs, file=output_file, end=end_char)
+            # Print to stdout
+            print(*args, **kwargs, end=end_char, flush=flush_flag)
+            if flush_flag:
+                output_file.flush()
+    else:
+        output_print = print
     
     try:
         yml_files = find_yml_files(args.directory)
         sample_dir = Path(args.directory)
         
         if not yml_files:
-            print("No .yml files found in {}".format(args.directory))
+            output_print("No .yml files found in {}".format(args.directory))
             return
         
-        print("Found {} preset files. Starting validation...".format(len(yml_files)))
+        output_print("Found {} preset files. Starting validation...".format(len(yml_files)))
         
         results = []
         for file_path in yml_files:
             if args.verbose:
-                print("Validating {}... ".format(file_path.name), end="", flush=True)
+                output_print("Validating {}... ".format(file_path.name), end="", flush=True)
             
             success, message = validate_preset_file(file_path, sample_dir)
             results.append((file_path, success, message))
             
             if args.verbose:
                 status = "✓ VALID" if success else "✗ INVALID"
-                print(status)
+                output_print(status)
+                if not success:
+                    output_print("  Error: {}".format(message))
         
         # Print summary
         valid_count = sum(1 for _, success, _ in results if success)
-        print("\nValidation complete: {}/{}  files valid".format(valid_count, len(results)))
+        output_print("\nValidation complete: {}/{}  files valid".format(valid_count, len(results)))
         
         # Print details for invalid files
         invalid_files = [(path, msg) for path, success, msg in results if not success]
         if invalid_files:
-            print("\nInvalid files:")
+            output_print("\nInvalid files:")
             invalid_files.sort(key=lambda x: x[0].name)
             for path, message in invalid_files:
-                print("  {}: {}".format(path.name, message))
+                output_print("  {}: {}".format(path.name, message))
     
     except Exception as e:
-        print("Error: {}".format(e))
+        output_print("Error: {}".format(e))
+        import traceback
+        traceback.print_exc(file=output_file if output_file else sys.stderr)
         return 1
+    finally:
+        if output_file:
+            output_file.close()
     
     return 0
 
