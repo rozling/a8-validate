@@ -36,7 +36,6 @@ coverage.xml
 .tox/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
