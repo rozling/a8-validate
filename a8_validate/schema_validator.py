@@ -53,6 +53,7 @@ CHANNEL_SCHEMA = {
     "PanMod": {"type": "cv_input_with_amount", "required": False},
     "MixLevel": {"type": "float", "required": False, "min": -90.0, "max": 6.0},
     "PlayMode": {"type": "integer", "required": False, "values": [0, 1]},
+    "AutoTrigger": {"type": "integer", "required": False, "values": [0, 1]},
     "LoopMode": {"type": "integer", "required": False, "values": [0, 1, 2]},
     "Reverse": {"type": "integer", "required": False, "values": [0, 1]},
     "Attack": {"type": "float", "required": False, "min": 0.0, "max": 99.0},
