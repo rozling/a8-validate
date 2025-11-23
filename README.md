@@ -1,5 +1,7 @@
 # Assimil8or Preset Validator (a8-validate)
 
+> Python validator for Assimil8or preset YAML files. Ensures schema compliance, validates cross-references, and checks WAV file compatibility.
+
 [![Tests](https://github.com/rozling/a8-validate/workflows/Tests/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/test.yml)
 [![Lint](https://github.com/rozling/a8-validate/workflows/Lint/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/lint.yml)
 [![Coverage](https://github.com/rozling/a8-validate/workflows/Coverage/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/coverage.yml)

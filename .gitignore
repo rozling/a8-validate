@@ -9,7 +9,6 @@ env/
 .env/
 
 # IDE-specific files
-.vscode/
 .idea/
 
 # Pytest
@@ -40,10 +39,3 @@ coverage.xml
 *.swp
 *.swo
 *~
-
-# Python cache files (specific ones listed for reference, but __pycache__/ already covered above)
-a8_validate/__pycache__/cross_reference_validator.cpython-313.pyc
-a8_validate/__pycache__/schema_validator.cpython-313.pyc
-a8_validate/__pycache__/yaml_parser.cpython-313.pyc
-a8_validate/tests/__pycache__/test_cross_reference_validator.cpython-313-pytest-8.3.5.pyc
-a8_validate/tests/__pycache__/test_yaml_parser.cpython-313-pytest-8.3.5.pyc
