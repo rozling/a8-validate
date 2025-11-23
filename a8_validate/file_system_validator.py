@@ -224,14 +224,14 @@ def _validate_sample_positions(preset_data, folder_path, sample_filename, contex
         )
 
     # Validate SampleEnd
+    # Note: Assimil8or automatically clamps SampleEnd to the file length if it exceeds it,
+    # so we don't treat this as an error - it's handled gracefully by the device
     sample_end = zone_value.get("SampleEnd")
     if sample_end is None:
         sample_end = channel_value.get("SampleEnd")
 
-    if sample_end is not None and sample_end > sample_length:
-        raise FileSystemValidationError(
-            f"SampleEnd ({sample_end}) in {context} exceeds sample length ({sample_length})"
-        )
+    # SampleEnd exceeding sample length is not an error - Assimil8or clamps it internally
+    # We could add a warning here if desired, but it's not a validation failure
 
 
 def get_sample_length(file_path):
