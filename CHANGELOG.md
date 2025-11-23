@@ -22,7 +22,8 @@
   - Fixed line length violations (wrapped long lines to comply with 120 character limit)
   - Removed unused variables (`channel_loop_start`, `channel_loop_length`, `channel_number`, `zone_number`, `n_frames`)
   - Formatted all code with `black` and `isort`
-- Updated README.md to link to CHANGELOG.md instead of inline changelog entries
+- Rewrote README with concise setup/usage instructions and added a direct link to `CHANGELOG.md`
+- Extended `.cursorrules` Git workflow rules to enforce changelog updates with every behavior or documentation change
 - All 49 tests still passing after code cleanup
 
 ## 13 November 2025

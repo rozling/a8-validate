@@ -35,6 +35,7 @@
 - Run pre-commit hooks before committing
 - Ensure all CI/CD checks pass (Tests, Lint, Coverage, Security)
 - Update CHANGELOG.md for significant changes
+- Every commit that modifies behavior, documentation, or tooling must include a CHANGELOG.md entry before pushing
 
 ## Code Quality
 - Remove unused imports
