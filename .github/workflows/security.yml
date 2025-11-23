@@ -33,8 +33,14 @@ jobs:
       run: |
         pip install -r requirements.txt
     
-    - name: Run pip-audit (on installed packages)
+    - name: Run pip-audit (fail on any vulnerability)
       run: |
-        pip-audit --desc || echo "pip-audit completed with warnings (some transitive dependencies may have build issues)"
+        pip-audit --desc
+    
+    - name: Show detailed vulnerability information
+      if: failure()
+      run: |
+        echo "Detailed vulnerability report:"
+        pip-audit --format json --desc | python3 -m json.tool || true
       continue-on-error: true
 
