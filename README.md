@@ -78,6 +78,16 @@ Failures pinpoint the preset/channel/zone and the exact parameter or sample path
 
 ---
 
+### Validate All Subdirectories
+
+To validate all subdirectories in a parent directory (useful for large preset collections):
+
+```bash
+python scripts/validate_all_subdirs.py /path/to/parent/directory
+```
+
+This script recursively validates all subdirectories and provides a summary of valid presets and any issues found.
+
 ### Generate Boundary Reference Presets
 
 Need to see the min/max values allowed by the schema?

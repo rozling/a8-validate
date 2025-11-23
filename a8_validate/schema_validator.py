@@ -50,6 +50,7 @@ CHANNEL_SCHEMA = {
     "Pitch": {"type": "float", "required": False, "min": -96.0, "max": 60.0},
     "Level": {"type": "float", "required": False, "min": -90.0, "max": 6.0},
     "Pan": {"type": "float", "required": False, "min": -1.0, "max": 1.0},
+    "PanMod": {"type": "cv_input_with_amount", "required": False},
     "MixLevel": {"type": "float", "required": False, "min": -90.0, "max": 6.0},
     "PlayMode": {"type": "integer", "required": False, "values": [0, 1]},
     "LoopMode": {"type": "integer", "required": False, "values": [0, 1, 2]},
