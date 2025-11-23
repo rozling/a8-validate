@@ -73,6 +73,7 @@ CHANNEL_SCHEMA = {
     "PMIndexMod": {"type": "cv_input_with_amount", "required": False},
     "LoopStart": {"type": "integer", "required": False, "min": 0},
     "LoopLength": {"type": "float", "required": False, "min": 4.0},
+    "LoopLengthIsEnd": {"type": "integer", "required": False, "values": [0, 1]},
     "LoopStartMod": {"type": "cv_input_with_amount", "required": False},
     "LoopLengthMod": {"type": "cv_input_with_amount", "required": False},
     "SampleStart": {"type": "integer", "required": False, "min": 0},
