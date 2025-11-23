@@ -242,13 +242,21 @@ def get_sample_length(file_path):
         
     Returns:
         int: Sample length
+        
+    Raises:
+        FileSystemValidationError: If the file cannot be read or is not a valid WAV file
     """
     try:
         with wave.open(file_path, 'rb') as wav_file:
             return wav_file.getnframes()
-    except Exception:
-        # If there's an error, return a sensible default
-        return 0
+    except wave.Error as e:
+        raise FileSystemValidationError(
+            f"Cannot read WAV file '{file_path}': {str(e)}"
+        )
+    except Exception as e:
+        raise FileSystemValidationError(
+            f"Error reading file '{file_path}': {str(e)}"
+        )
 
 
 def calculate_total_memory(preset_data, folder_path):
@@ -283,8 +291,23 @@ def calculate_total_memory(preset_data, folder_path):
                     # Memory = channels * width * frames
                     sample_bytes = channels * sample_width * n_frames
                     total_bytes += sample_bytes
-            except Exception:
-                # If we can't open the file, use the file size as a fallback
-                total_bytes += os.path.getsize(sample_path)
+            except wave.Error as e:
+                # If WAV file is corrupted or invalid, skip it and log a warning
+                # Using file size would be inaccurate (includes headers, compression, etc.)
+                # Better to skip than give false memory calculations
+                import warnings
+                warnings.warn(
+                    f"Cannot calculate memory for '{sample_filename}': {str(e)}. "
+                    f"Skipping from memory calculation.",
+                    UserWarning
+                )
+            except Exception as e:
+                # For other errors (permissions, etc.), also skip
+                import warnings
+                warnings.warn(
+                    f"Cannot read '{sample_filename}': {str(e)}. "
+                    f"Skipping from memory calculation.",
+                    UserWarning
+                )
     
     return total_bytes

@@ -91,7 +91,7 @@ def parse_yaml_file(file_path, return_line_map=False):
     if os.path.getsize(file_path) == 0:
         raise PresetParseError(f"Empty file: {file_path}")
 
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         raw_content = f.read()
 
     # Preprocess content to fix unquoted special values
@@ -128,7 +128,7 @@ def parse_yaml_file(file_path, return_line_map=False):
             line_info = f" on line {e.problem_mark.line + 1}"
         raise YAMLSyntaxError(f"YAML syntax error{line_info}: {str(e)}")
     except Exception as e:
-        line_match = re.search(r'line (\\d+)', str(e))
+        line_match = re.search(r'line (\d+)', str(e))
         if line_match:
             line_info = f" on line {line_match.group(1)}"
             raise YAMLSyntaxError(f"YAML syntax error{line_info}: {str(e)}")

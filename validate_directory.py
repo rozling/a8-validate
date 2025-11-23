@@ -182,7 +182,8 @@ def main():
     except Exception as e:
         output_print("Error: {}".format(e))
         import traceback
-        traceback.print_exc(file=output_file if output_file else sys.stderr)
+        # Always write traceback to stderr, not output file
+        traceback.print_exc(file=sys.stderr)
         return 1
     finally:
         if output_file:

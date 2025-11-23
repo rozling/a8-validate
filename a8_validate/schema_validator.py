@@ -118,8 +118,13 @@ def validate_preset(preset_data, path=()):
     """
     Validate a preset against the schema.
     
+    Note: This function modifies the input preset_data dictionary in place by
+    normalizing and validating parameter values. For example, string representations
+    of numbers are converted to their numeric types, and the Name parameter is
+    converted to a string if provided as a number.
+    
     Args:
-        preset_data: Dictionary containing the preset data
+        preset_data: Dictionary containing the preset data (will be modified in place)
         path: Tuple representing the path to this preset in the overall structure
         
     Raises:
@@ -176,8 +181,12 @@ def validate_channel(channel_data, channel_number, path=()):
     """
     Validate a channel against the schema.
     
+    Note: This function modifies the input channel_data dictionary in place by
+    normalizing and validating parameter values (e.g., converting string numbers
+    to numeric types).
+    
     Args:
-        channel_data: Dictionary containing the channel data
+        channel_data: Dictionary containing the channel data (will be modified in place)
         channel_number: Channel number
         path: Tuple representing the path to this channel in the overall structure
         
@@ -212,6 +221,11 @@ def validate_channel(channel_data, channel_number, path=()):
             zone_numbers.append(num)
         except (IndexError, ValueError):
             raise InvalidParameterError(f"Invalid zone key format: {k}", path=path + (k,))
+    
+    # Require at least one zone per channel
+    if len(zone_numbers) == 0:
+        raise SchemaValidationError(f"Channel {channel_number} must have at least one zone", path=path)
+    
     if len(zone_numbers) > 8:
         raise SchemaValidationError(f"Channel {channel_number} has {len(zone_numbers)} zones, maximum allowed is 8", path=path)
     if sorted(zone_numbers) != list(range(1, len(zone_numbers) + 1)):
@@ -222,8 +236,12 @@ def validate_zone(zone_data, channel_number, zone_number, path=()):
     """
     Validate a zone against the schema.
     
+    Note: This function modifies the input zone_data dictionary in place by
+    normalizing and validating parameter values (e.g., converting string numbers
+    to numeric types).
+    
     Args:
-        zone_data: Dictionary containing the zone data
+        zone_data: Dictionary containing the zone data (will be modified in place)
         channel_number: Channel number
         zone_number: Zone number
         path: Tuple representing the path to this zone in the overall structure
