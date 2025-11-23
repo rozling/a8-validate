@@ -134,7 +134,10 @@ def parse_yaml_file(file_path, return_line_map=False):
             raise YAMLSyntaxError(f"YAML syntax error{line_info}: {str(e)}")
         raise PresetParseError(f"Error parsing file: {str(e)}")
 
-    if not data or not any(key.startswith('Preset ') for key in data.keys()):
+    if not data:
+        raise InvalidPresetError(f"Empty or invalid preset file: {file_path}")
+    
+    if not any(key.startswith('Preset ') for key in data.keys()):
         raise InvalidPresetError(f"Not a valid Assimil8or preset format: {file_path}")
 
     if return_line_map:

@@ -46,6 +46,15 @@ These files serve as:
 
 The script extracts min/max values from the schema definitions (`PRESET_SCHEMA`, `CHANNEL_SCHEMA`, `ZONE_SCHEMA`) and generates complete preset examples with all parameters set to their boundary values.
 
+## TODO
+
+### Code Improvements
+- **Issue 2**: Fix misleading error message in `schema_validator.py` line 351 - The error message says "String representations are not allowed" for float types, but the code actually allows and converts string representations for integers and floats (lines 295-306). The error message should be updated to reflect the actual behavior.
+
+- **Issue 3**: Review YAML loader usage in `yaml_parser.py` line 122 - Currently passing a string directly to `LineNumberLoader`. PyYAML loaders typically expect a stream. Consider using `io.StringIO` or `yaml.load()` with string input to ensure compatibility and follow best practices.
+
+- **Issue 4**: Add validation for invalid XfadeGroup values in `cross_reference_validator.py` line 98 - If `XfadeGroup` is not 'A', 'B', 'C', or 'D', it's silently ignored. While schema validation should catch this, the cross-reference validator should also explicitly validate and report invalid group values.
+
 ## Changelog
 - 23 April 2025: Refactored the `find_yml_files` function to ignore system files:
   - folderprefs.yml, lastfolder.yml, lastpreset.yml, midi*.yml, and hidden files starting with ._.
