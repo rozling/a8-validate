@@ -463,18 +463,27 @@ def _validate_parameter_value(param, value, schema, context="", path=()):
             )
 
     elif param_type == "pm_source":
-        if isinstance(value, int) and 1 <= value <= 8:
+        # PMSource accepts numeric values 0-10:
+        # 0-7: channels (or 0 = off?)
+        # 8: left input
+        # 9: right input
+        # 10: select CV
+        if isinstance(value, int) and 0 <= value <= 10:
             return value
 
         if isinstance(value, str):
+            # Support string representations of numbers
+            if value.isdigit():
+                int_val = int(value)
+                if 0 <= int_val <= 10:
+                    return int_val
+            # Support legacy string format
             if value in ["Sample Input Left", "Sample Input Right"]:
                 return value
-            if value.isdigit() and 1 <= int(value) <= 8:
-                return int(value)
 
         raise InvalidValueError(
-            f"Parameter {param}{context_str} must be a channel number (1-8) "
-            f"or 'Sample Input Left/Right', got {value}",
+            f"Parameter {param}{context_str} must be a numeric value (0-10), "
+            f"where 0-7 are channels, 8=left input, 9=right input, 10=select CV. Got {value}",
             path=path,
         )
 
