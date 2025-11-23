@@ -160,9 +160,17 @@ def validate_preset(preset_data, path=()):
                 f"Preset {preset_key} has {len(channel_numbers)} channels, maximum allowed is 8",
                 path=path + (preset_key,),
             )
-        if sorted(channel_numbers) != list(range(1, len(channel_numbers) + 1)):
+        # Check that channels are in ascending order (but allow non-sequential channels)
+        # e.g., [1, 4, 7] is OK, but [4, 1, 7] is not OK
+        if channel_numbers != sorted(channel_numbers):
             raise SchemaValidationError(
-                f"Channel numbers in {preset_key} must be sequential starting from 1",
+                f"Channel numbers in {preset_key} must be in ascending order",
+                path=path + (preset_key,),
+            )
+        # Check that all channel numbers are in valid range (1-8)
+        if any(num < 1 or num > 8 for num in channel_numbers):
+            raise SchemaValidationError(
+                f"Channel numbers in {preset_key} must be between 1 and 8",
                 path=path + (preset_key,),
             )
 
