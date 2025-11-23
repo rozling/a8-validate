@@ -64,6 +64,7 @@ CHANNEL_SCHEMA = {
     "PitchCV": {"type": "cv_input_with_amount", "required": False},
     "LinFM": {"type": "cv_input_with_amount", "required": False},
     "LinAM": {"type": "cv_input_with_amount", "required": False},
+    "LinAMisExtEnv": {"type": "integer", "required": False, "values": [0, 1]},
     "ExpFM": {"type": "cv_input_with_amount", "required": False},
     "ExpAM": {"type": "cv_input_with_amount", "required": False},
     "PhaseCV": {"type": "cv_input_with_amount", "required": False},
