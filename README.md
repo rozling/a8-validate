@@ -1,5 +1,10 @@
 ## Assimil8or Preset Validator (a8-validate)
 
+[![Tests](https://github.com/rozling/a8-validate/workflows/Tests/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/test.yml)
+[![Lint](https://github.com/rozling/a8-validate/workflows/Lint/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/lint.yml)
+[![Coverage](https://github.com/rozling/a8-validate/workflows/Coverage/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/coverage.yml)
+[![Security](https://github.com/rozling/a8-validate/workflows/Security/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/security.yml)
+
 ### Overview
 A validation tool for Assimil8or preset files, ensuring they meet the required schema and cross-reference constraints.
 
@@ -16,7 +21,7 @@ A validation tool for Assimil8or preset files, ensuring they meet the required s
 
 ### Installation
 ```bash
-git clone https://github.com/yourusername/a8-validate.git
+git clone https://github.com/rozling/a8-validate.git
 cd a8-validate
 pip install -r requirements.txt
 ```

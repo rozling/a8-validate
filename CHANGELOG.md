@@ -1,5 +1,27 @@
 ## [Unreleased]
 
+## 13 November 2025
+
+### Added
+- GitHub Actions workflows for CI/CD
+  - Test workflow: Multi-OS (Ubuntu, macOS, Windows) and multi-Python version (3.9-3.13) testing
+  - Lint workflow: Code quality checks with flake8, black, and isort
+  - Coverage workflow: Test coverage reporting with pytest-cov
+  - Security workflow: Dependency vulnerability scanning with safety and pip-audit (runs weekly)
+- Pre-commit hooks configuration
+  - Automatic code formatting with black
+  - Import sorting with isort
+  - Linting with flake8
+  - File validation (YAML, JSON, TOML)
+  - Trailing whitespace and end-of-file fixes
+- Development dependencies file (`requirements-dev.txt`)
+  - Includes pytest-cov, black, isort, flake8, safety, pip-audit, pre-commit
+- Code quality configuration files
+  - `.flake8` configuration (120 char line length, compatible with black)
+  - `.isort.cfg` configuration (black-compatible import sorting)
+- Status badges in README.md
+  - Tests, Lint, Coverage, and Security workflow badges
+
 ### Changed
 - Updated YAML parsing to ensure strict numeric type conversion
   - Modified `construct_number()` in `yaml_parser.py` to convert numeric strings to actual numeric types
