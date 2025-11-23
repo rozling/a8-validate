@@ -5,7 +5,7 @@
 [![Coverage](https://github.com/rozling/a8-validate/workflows/Coverage/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/coverage.yml)
 [![Security](https://github.com/rozling/a8-validate/workflows/Security/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/security.yml)
 
-## Features
+### Features
 
 This is a python library / set of programs which:
 - Parse Assimil8or `.yml` preset files
@@ -18,17 +18,17 @@ This is a python library / set of programs which:
   - Sample width: 8/16/24/32 bits
   - Loop/start/end positions don't exceed file length
 
-Use them to:
+Use it to:
 - Run before copying presets to your card so you catch problems immediately.
 - Validate presets created by another program or AI
 
-## Background
+### Background
 
-This stemmed from one day asking AI to come up with some cool preset ideas.
-The ideas were great but when it came to creating the actual presets of course it hallucinated the format / features etc.
-These tools should help any person / program creating A8 presets and wanting to ensure they are as correct as possible.
+- This stemmed from one day asking AI to come up with some cool preset ideas.
+- The ideas were great but when it came to creating the actual presets of course it hallucinated the format / features etc.
+- These tools should help any person / program creating A8 presets to ensure they are as correct as possible.
 
-## Warning!
+### Warning!
 
 This tool is provided “as is”, without any warranties.  
 Always keep backups of your presets and samples.  
@@ -36,7 +36,7 @@ The authors are not responsible for any data loss, corrupted files, or equipment
 
 ---
 
-## Quick Start
+### Installation
 
 ```bash
 git clone https://github.com/rozling/a8-validate.git
@@ -49,7 +49,9 @@ pip install -r requirements.txt
 
 ---
 
-## Validate a Preset Folder
+### How to use
+
+Validate a Preset Folder:
 
 ```bash
 python validate_directory.py /path/to/presets --verbose
@@ -74,7 +76,7 @@ Failures pinpoint the preset/channel/zone and the exact parameter or sample path
 
 ---
 
-## Generate Boundary Reference Presets
+### Generate Boundary Reference Presets
 
 Need to see the min/max values allowed by the schema?
 
@@ -86,7 +88,7 @@ This writes `preset_min_values.yml` and `preset_max_values.yml`. Use them as doc
 
 ---
 
-## Run the Test Suite
+### Run the Test Suite
 
 ```bash
 venv/bin/pytest -v --tb=short
@@ -96,7 +98,7 @@ venv/bin/pytest -v --tb=short
 
 ---
 
-## Repository Layout
+### Repository Layout
 
 | Path                     | Purpose                                   |
 |--------------------------|-------------------------------------------|
@@ -107,7 +109,7 @@ venv/bin/pytest -v --tb=short
 
 ---
 
-## Contributing
+### Contributing
 
 1. Format code with `black` (120 columns) and `isort`.
 2. Run `flake8 --max-line-length=120 --extend-ignore=E203,W503`.
