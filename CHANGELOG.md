@@ -1,5 +1,30 @@
 ## [Unreleased]
 
+## 23 November 2025
+
+### Added
+- Created `.cursorrules` file to ensure Cursor AI always uses the virtual environment
+- Added VS Code workspace settings (`.vscode/settings.json`) for Python development:
+  - Automatic virtual environment activation
+  - Format on save with black
+  - Import sorting with isort
+  - Linting configuration with flake8
+  - Pytest testing configuration
+
+### Fixed
+- Removed `wave` package from `requirements.txt` (it's a standard library module in Python)
+  - Fixed dependency installation failures in CI/CD workflows
+  - The PyPI `wave` package was pulling in incompatible Python 2 dependencies
+
+### Changed
+- Fixed all linting issues to pass CI/CD checks:
+  - Removed unused imports (`os`, `Dict`, `Any` from `validate_directory.py`; `re`, `collections` from `yaml_parser.py`)
+  - Fixed line length violations (wrapped long lines to comply with 120 character limit)
+  - Removed unused variables (`channel_loop_start`, `channel_loop_length`, `channel_number`, `zone_number`, `n_frames`)
+  - Formatted all code with `black` and `isort`
+- Updated README.md to link to CHANGELOG.md instead of inline changelog entries
+- All 49 tests still passing after code cleanup
+
 ## 13 November 2025
 
 ### Added

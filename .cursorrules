@@ -1,0 +1,45 @@
+# Cursor Rules for a8-validate
+
+## Python Environment
+- Always use the virtual environment located at `venv/` or `.venv/` when available
+- Prefer `venv/bin/python` for Python execution
+- When running commands, activate the virtual environment first or use `venv/bin/python -m <command>`
+- For pip installs, use `venv/bin/pip install` or `python -m pip install` from within the venv
+
+## Code Style
+- Follow PEP 8 style guidelines
+- Use black for code formatting (120 character line length)
+- Use isort for import sorting (black-compatible profile)
+- Maximum line length: 120 characters
+- Run flake8 before committing (with max-line-length=120, extend-ignore=E203,W503)
+
+## Testing
+- Run tests using `pytest` from the virtual environment
+- Test command: `venv/bin/pytest -v --tb=short` or `python -m pytest -v --tb=short`
+- All tests are located in `a8_validate/tests/`
+- Ensure all 49 tests pass before committing
+
+## Dependencies
+- Production dependencies are in `requirements.txt`
+- Development dependencies are in `requirements-dev.txt`
+- Never add `wave` to requirements.txt (it's a standard library module)
+- Always use `venv/bin/pip` for installing dependencies
+
+## File Structure
+- Main validation code: `a8_validate/`
+- CLI script: `validate_directory.py`
+- Utility scripts: `scripts/`
+- Tests: `a8_validate/tests/`
+
+## Git Workflow
+- Run pre-commit hooks before committing
+- Ensure all CI/CD checks pass (Tests, Lint, Coverage, Security)
+- Update CHANGELOG.md for significant changes
+
+## Code Quality
+- Remove unused imports
+- Remove unused variables
+- Keep functions focused and single-purpose
+- Add docstrings for public functions and classes
+- Use type hints where appropriate
+

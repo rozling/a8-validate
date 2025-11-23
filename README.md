@@ -60,9 +60,8 @@ The script extracts min/max values from the schema definitions (`PRESET_SCHEMA`,
 
 - **Issue 4**: Add validation for invalid XfadeGroup values in `cross_reference_validator.py` line 98 - If `XfadeGroup` is not 'A', 'B', 'C', or 'D', it's silently ignored. While schema validation should catch this, the cross-reference validator should also explicitly validate and report invalid group values.
 
-## Changelog
-- 23 April 2025: Refactored the `find_yml_files` function to ignore system files:
-  - folderprefs.yml, lastfolder.yml, lastpreset.yml, midi*.yml, and hidden files starting with ._.
+### Changelog
+See [CHANGELOG.md](CHANGELOG.md) for a detailed list of changes and updates.
 
 ### Contributing
 Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
