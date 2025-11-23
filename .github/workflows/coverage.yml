@@ -22,11 +22,11 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest-cov coverage
+        pip install -r requirements-dev.txt
     
     - name: Run tests with coverage
       run: |
-        pytest --cov=a8_validate --cov-report=xml --cov-report=html --cov-report=term
+        python -m pytest --cov=a8_validate --cov-report=xml --cov-report=html --cov-report=term
     
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
