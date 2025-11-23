@@ -25,3 +25,20 @@
 - Improved schema validator to accept numeric and special-character preset names.
 - Added detailed line number reporting for schema validation errors.
 - Updated tests to cover new validation rules and edge cases.
+
+## 13 November 2025
+
+### Fixed
+- Fixed regex pattern bug in YAML parser that prevented line number extraction from error messages
+- Fixed silent error masking in `get_sample_length()` - now properly raises FileSystemValidationError instead of returning 0
+- Fixed error traceback output to always go to stderr instead of potentially going to output file
+- Improved memory calculation fallback to skip problematic files with warnings instead of using inaccurate file size
+
+### Changed
+- Added explicit UTF-8 encoding to all file operations in YAML parser for cross-platform compatibility
+- Documented data mutation behavior in validation functions (validate_preset, validate_channel, validate_zone)
+
+### Validation Improvements
+- Added validation to require at least one zone per channel (prevents invalid empty channels)
+- Enhanced error handling in file system validator to properly report WAV file read errors
+
