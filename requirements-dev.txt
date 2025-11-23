@@ -1,5 +1,7 @@
 # Development dependencies
 # Install with: pip install -r requirements-dev.txt
+# (Automatically includes runtime dependencies.)
+-r requirements.txt
 
 # Testing
 pytest>=7.0.0

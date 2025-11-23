@@ -62,10 +62,9 @@ Utilized Test-Driven Development (TDD) methodology to create a robust validation
 4. Achieved 100% test pass rate
 
 ## Next Steps
-- Implement CLI interface
-- Add more advanced validation rules
-- Create documentation
-- Develop language server extension
+- Track feature requests & bug reports through GitHub Issues now that the project is public.
+- Continue expanding validation rules (e.g., additional crossfade checks, schema refinements).
+- Evaluate opportunities for integrations (language server, DAW tooling) once community demand is clear.
 
 ## Lessons Learned
 - Importance of test-driven development

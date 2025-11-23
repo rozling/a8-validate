@@ -88,4 +88,11 @@ venv/bin/pytest -v --tb=short
 4. Update `CHANGELOG.md` for user-facing changes.
 5. Submit a PR.
 
-See [CHANGELOG.md](CHANGELOG.md) for the full history. Licensed under MIT.
+See:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) for the complete workflow.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.
+- [SECURITY.md](SECURITY.md) for responsible disclosure instructions.
+- [CHANGELOG.md](CHANGELOG.md) for release history.
+
+Licensed under the MIT License. 

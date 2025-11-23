@@ -10,6 +10,11 @@
   - Import sorting with isort
   - Linting configuration with flake8
   - Pytest testing configuration
+- Added public-facing documentation and policies:
+  - `LICENSE` (MIT)
+  - `CONTRIBUTING.md`
+  - `CODE_OF_CONDUCT.md`
+  - `SECURITY.md`
 
 ### Fixed
 - Removed `wave` package from `requirements.txt` (it's a standard library module in Python)
@@ -24,6 +29,8 @@
   - Formatted all code with `black` and `isort`
 - Rewrote README with concise setup/usage instructions and added a direct link to `CHANGELOG.md`
 - Extended `.cursorrules` Git workflow rules to enforce changelog updates with every behavior or documentation change
+- Removed the vendor `assimil8or.md` manual from the repository to avoid redistributing copyrighted material
+- Moved `pytest` out of `requirements.txt` (runtime dependencies) and ensured `requirements-dev.txt` includes `-r requirements.txt`
 - All 49 tests still passing after code cleanup
 
 ## 13 November 2025
