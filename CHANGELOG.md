@@ -39,6 +39,7 @@
 - Extended `.cursorrules` Git workflow rules to enforce changelog updates with every behavior or documentation change
 - Removed the vendor `assimil8or.md` manual from the repository to avoid redistributing copyrighted material
 - Moved `pytest` out of `requirements.txt` (runtime dependencies) and ensured `requirements-dev.txt` includes `-r requirements.txt`
+- Added an explicit “use at your own risk” warning to the README to clarify there are no warranties
 - All 49 tests still passing after code cleanup
 
 ## 13 November 2025

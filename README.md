@@ -5,7 +5,29 @@
 [![Coverage](https://github.com/rozling/a8-validate/workflows/Coverage/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/coverage.yml)
 [![Security](https://github.com/rozling/a8-validate/workflows/Security/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/security.yml)
 
-`a8-validate` parses Assimil8or `.yml` preset files, enforces the schema, checks channel/zone cross-references, and ensures referenced WAV files exist and make sense. Run it before copying presets to your card so you catch problems immediately.
+## Features
+
+This is a python library / set of programs which:
+- Parse Assimil8or `.yml` preset files
+- Enforce the preset schema (inferred from existing A8 presets)
+- Check channel/zone cross-references
+- Ensure referenced WAV files exist and make sense
+
+Use them to:
+- Run before copying presets to your card so you catch problems immediately.
+- Validate presets created by another program or AI
+
+## Background
+
+This stemmed from one day asking AI to come up with some cool preset ideas.
+The ideas were great but when it came to creating the actual presets of course it hallucinated the format / features etc.
+These tools should help any person / program creating A8 presets and wanting to ensure they are as correct as possible.
+
+## Warning!
+
+This tool is provided “as is”, without any warranties.  
+Always keep backups of your presets and samples.  
+The authors are not responsible for any data loss, corrupted files, or equipment damage resulting from its use.
 
 ---
 
