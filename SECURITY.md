@@ -11,7 +11,7 @@ Please report vulnerabilities against the `main` branch. Older commits are unsup
 ## Reporting a Vulnerability
 
 1. Do **not** create a public GitHub issue for security-sensitive reports.
-2. Instead, open a private security advisory using GitHub’s “Report a vulnerability” workflow **or** email `security@rozling.dev`.
+2. Instead, open a private security advisory using GitHub's "Report a vulnerability" workflow.
 3. Include:
    - A description of the issue and affected paths/files.
    - Steps to reproduce.
