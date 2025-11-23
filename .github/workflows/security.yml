@@ -3,10 +3,12 @@ name: Security
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   security:

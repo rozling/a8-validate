@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-latest", "windows-latest"]') || fromJSON('["ubuntu-latest", "macos-latest", "windows-latest"]') }}
         python-version: ['3.11']
     
     steps:
@@ -54,7 +59,7 @@ jobs:
     - name: Run tests
       if: steps.changes.outputs.code == 'true'
       run: |
-        python -m pytest -v --tb=short
+        python -m pytest -v --tb=short -n auto
     
     - name: Skip message
       if: steps.changes.outputs.code != 'true'

@@ -6,8 +6,13 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     
     steps:
@@ -17,6 +22,14 @@ jobs:
       with:
         python-version: '3.11'
         cache: 'pip'
+    
+    - name: Cache lint dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: lint-deps-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          lint-deps-
     
     - name: Install linting dependencies
       run: |

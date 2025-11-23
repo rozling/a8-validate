@@ -6,8 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   coverage:
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     
     steps:
@@ -50,7 +55,7 @@ jobs:
     - name: Run tests with coverage
       if: steps.changes.outputs.code == 'true'
       run: |
-        python -m pytest --cov=a8_validate --cov-report=xml --cov-report=html --cov-report=term
+        python -m pytest --cov=a8_validate --cov-report=xml --cov-report=html --cov-report=term -n auto
     
     - name: Skip message
       if: steps.changes.outputs.code != 'true'
@@ -58,6 +63,7 @@ jobs:
         echo "Skipping coverage - only documentation files changed"
     
     - name: Upload coverage report
+      if: steps.changes.outputs.code == 'true'
       uses: actions/upload-artifact@v5
       with:
         name: coverage-report
