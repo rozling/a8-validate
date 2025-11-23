@@ -3,6 +3,41 @@
 ## 23 November 2025
 
 ### Added
+- Added missing channel parameters to schema:
+  - `PanMod` (cv_input_with_amount format, e.g., "0A 1.00")
+  - `AutoTrigger` (integer, 0 or 1)
+  - `LinAMisExtEnv` (integer, 0 or 1)
+  - `LoopLengthIsEnd` (integer, 0 or 1)
+- Updated `PMSource` validation to accept values 0-10:
+  - 0-7: channels
+  - 8: left input
+  - 9: right input
+  - 10: select CV
+- Added `validate_all_subdirs.py` utility script for validating large preset collections
+- CI/CD optimizations:
+  - Added concurrency groups to cancel outdated workflow runs
+  - Reduced PR test matrix (Ubuntu + Windows for PRs, all OSes for main)
+  - Skip workflows on draft PRs
+  - Parallel test execution with pytest-xdist
+  - Cache lint dependencies
+
+### Changed
+- Allow non-sequential channels in presets (e.g., channels 1, 4, 7)
+  - Channels must still be in ascending order
+  - Channels must be in valid range (1-8)
+- Allow `LoopLength` without `LoopStart` (LoopStart defaults to 0)
+  - `LoopStart` still requires `LoopLength` to be defined
+- Removed validation for `SampleEnd` exceeding sample length
+  - Assimil8or automatically clamps SampleEnd to file length internally
+  - This was causing false positive errors
+
+### Fixed
+- Fixed linting errors in `validate_all_subdirs.py` script
+- All 49 tests passing with updated validation rules
+
+## 23 November 2025 (Earlier)
+
+### Added
 - Created `.cursorrules` file to ensure Cursor AI always uses the virtual environment
 - Added VS Code workspace settings (`.vscode/settings.json`) for Python development:
   - Automatic virtual environment activation
