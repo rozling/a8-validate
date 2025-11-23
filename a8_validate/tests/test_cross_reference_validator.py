@@ -48,7 +48,7 @@ class TestCrossReferenceValidator:
 
     def test_partial_loop_parameters(self):
         """Test validation of partial loop parameter definitions."""
-        # Test with only LoopStart
+        # Test with only LoopStart (should fail - LoopStart requires LoopLength)
         preset_with_only_start = {
             "Preset 1": {
                 "Name": "Test Preset",
@@ -65,30 +65,25 @@ class TestCrossReferenceValidator:
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_with_only_start)
 
-        # Error should mention that both LoopStart and LoopLength must be defined together
+        # Error should mention that LoopStart requires LoopLength
         assert "LoopStart" in str(exc_info.value)
         assert "LoopLength" in str(exc_info.value)
 
-        # Test with only LoopLength
+        # Test with only LoopLength (should pass - LoopStart defaults to 0)
         preset_with_only_length = {
             "Preset 1": {
                 "Name": "Test Preset",
                 "Channel 1": {
                     "Pitch": 0.00,
                     "LoopMode": 1,  # Loop mode on
-                    "LoopLength": 1000,  # Only LoopLength provided
+                    "LoopLength": 1000,  # Only LoopLength provided (LoopStart defaults to 0)
                     "Zone 1": {"Sample": "test.wav"},
                 },
             }
         }
 
-        # Validation should raise LoopConfigurationError
-        with pytest.raises(LoopConfigurationError) as exc_info:
-            validate_relationships(preset_with_only_length)
-
-        # Error should mention that both LoopStart and LoopLength must be defined together
-        assert "LoopStart" in str(exc_info.value)
-        assert "LoopLength" in str(exc_info.value)
+        # Validation should pass - LoopLength alone is allowed
+        validate_relationships(preset_with_only_length)
 
     def test_loop_mode_with_default_full_sample_loop(self):
         """Test validation of a channel with loop mode on but no explicit loop parameters."""

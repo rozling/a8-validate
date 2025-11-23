@@ -227,7 +227,8 @@ def _validate_loop_settings(channel_data, channel_number):
     Validation rules:
     - If loop parameters are explicitly provided, they must be consistent
     - Absence of explicit loop parameters implies a default "full sample loop"
-    - Partial loop parameter definitions (only LoopStart or only LoopLength) are invalid
+    - LoopLength can be defined alone (LoopStart defaults to 0)
+    - LoopStart requires LoopLength to be defined
 
     Args:
         channel_data: Dictionary containing the channel data
@@ -248,9 +249,11 @@ def _validate_loop_settings(channel_data, channel_number):
         all_loop_params = [channel_data] + zone_loop_params
         for params in all_loop_params:
             # Check for partial loop parameter definitions
-            if ("LoopStart" in params) != ("LoopLength" in params):
+            # LoopLength can be defined alone (LoopStart defaults to 0)
+            # But if LoopStart is defined, LoopLength must also be defined
+            if "LoopStart" in params and "LoopLength" not in params:
                 raise LoopConfigurationError(
-                    f"Channel {channel_number}: LoopStart and LoopLength must be defined together"
+                    f"Channel {channel_number}: LoopStart requires LoopLength to be defined"
                 )
 
             # Validate LoopLengthIsEnd flag consistency with LoopMode
@@ -357,11 +360,15 @@ def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_n
         channel_loop_start = channel_data.get("LoopStart")
         channel_loop_length = channel_data.get("LoopLength")
 
-        # Require either zone-level or channel-level LoopStart and LoopLength
-        if not (zone_loop_start or channel_loop_start):
+        # Require LoopLength (LoopStart defaults to 0 if not defined)
+        # But if LoopStart is defined, it requires LoopLength
+        if zone_loop_start and not (zone_loop_length or channel_loop_length):
             raise LoopConfigurationError(
-                f"Channel {channel_number}, Zone {zone_number} has LoopMode {zone_data['LoopMode']} "
-                f"but LoopStart is not defined"
+                f"Channel {channel_number}, Zone {zone_number}: LoopStart requires LoopLength to be defined"
+            )
+        if channel_loop_start and not (zone_loop_length or channel_loop_length):
+            raise LoopConfigurationError(
+                f"Channel {channel_number}, Zone {zone_number}: LoopStart requires LoopLength to be defined"
             )
 
         if not (zone_loop_length or channel_loop_length):
