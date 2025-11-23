@@ -5,6 +5,7 @@ import re
 
 class SchemaValidationError(Exception):
     """Base exception for schema validation errors."""
+
     def __init__(self, message, path=None):
         super().__init__(message)
         self.path = path
@@ -12,16 +13,19 @@ class SchemaValidationError(Exception):
 
 class InvalidParameterError(SchemaValidationError):
     """Exception raised for invalid parameter names."""
+
     pass
 
 
 class InvalidValueError(SchemaValidationError):
     """Exception raised for invalid parameter values."""
+
     pass
 
 
 class MissingRequiredParameterError(SchemaValidationError):
     """Exception raised for missing required parameters."""
+
     pass
 
 
@@ -101,63 +105,76 @@ ZONE_SCHEMA = {
 }
 
 # Regex patterns for validation
-CV_INPUT_PATTERN = r'^(Off|[0-8][A-C])$'
-CV_INPUT_WITH_AMOUNT_PATTERN = r'^(Off|[0-8][A-C]) [-+]?[0-9]*\.?[0-9]+$'
-VOLTAGE_PATTERN = r'^[-+]?[0-9]*\.?[0-9]+$'
-PM_SOURCE_PATTERN = r'^([1-8]|Sample Input (Left|Right))$'
+CV_INPUT_PATTERN = r"^(Off|[0-8][A-C])$"
+CV_INPUT_WITH_AMOUNT_PATTERN = r"^(Off|[0-8][A-C]) [-+]?[0-9]*\.?[0-9]+$"
+VOLTAGE_PATTERN = r"^[-+]?[0-9]*\.?[0-9]+$"
+PM_SOURCE_PATTERN = r"^([1-8]|Sample Input (Left|Right))$"
 
 
 def _is_numeric_string(value):
     """Check if a string represents a valid numeric value."""
     if not isinstance(value, str):
         return False
-    return bool(re.match(r'^[+-]?\d+(\.\d+)?$', value))
+    return bool(re.match(r"^[+-]?\d+(\.\d+)?$", value))
 
 
 def validate_preset(preset_data, path=()):
     """
     Validate a preset against the schema.
-    
+
     Note: This function modifies the input preset_data dictionary in place by
     normalizing and validating parameter values. For example, string representations
     of numbers are converted to their numeric types, and the Name parameter is
     converted to a string if provided as a number.
-    
+
     Args:
         preset_data: Dictionary containing the preset data (will be modified in place)
         path: Tuple representing the path to this preset in the overall structure
-        
+
     Raises:
         SchemaValidationError: If validation fails
     """
     for preset_key, preset_value in preset_data.items():
-        if not preset_key.startswith('Preset '):
-            raise InvalidParameterError(f"Invalid preset key: {preset_key}", path=path + (preset_key,))
-        
+        if not preset_key.startswith("Preset "):
+            raise InvalidParameterError(
+                f"Invalid preset key: {preset_key}", path=path + (preset_key,)
+            )
+
         # Enforce channel count and order
-        channel_keys = [k for k in preset_value.keys() if k.startswith('Channel ')]
+        channel_keys = [k for k in preset_value.keys() if k.startswith("Channel ")]
         channel_numbers = []
         for k in channel_keys:
             try:
-                num = int(k.split(' ')[1])
+                num = int(k.split(" ")[1])
                 channel_numbers.append(num)
             except (IndexError, ValueError):
-                raise InvalidParameterError(f"Invalid channel key format: {k}", path=path + (preset_key, k))
+                raise InvalidParameterError(
+                    f"Invalid channel key format: {k}", path=path + (preset_key, k)
+                )
         if len(channel_numbers) > 8:
-            raise SchemaValidationError(f"Preset {preset_key} has {len(channel_numbers)} channels, maximum allowed is 8", path=path + (preset_key,))
+            raise SchemaValidationError(
+                f"Preset {preset_key} has {len(channel_numbers)} channels, maximum allowed is 8",
+                path=path + (preset_key,),
+            )
         if sorted(channel_numbers) != list(range(1, len(channel_numbers) + 1)):
-            raise SchemaValidationError(f"Channel numbers in {preset_key} must be sequential starting from 1", path=path + (preset_key,))
-        
+            raise SchemaValidationError(
+                f"Channel numbers in {preset_key} must be sequential starting from 1",
+                path=path + (preset_key,),
+            )
+
         # Validate preset parameters
         for param, value in preset_value.items():
-            if param.startswith('Channel '):
+            if param.startswith("Channel "):
                 # Validate channel
-                channel_number = int(param.split(' ')[1])
+                channel_number = int(param.split(" ")[1])
                 validate_channel(value, channel_number, path=path + (preset_key, param))
             else:
                 # Validate preset parameter
                 if param not in PRESET_SCHEMA:
-                    raise InvalidParameterError(f"Invalid preset parameter: {param}", path=path + (preset_key, param))
+                    raise InvalidParameterError(
+                        f"Invalid preset parameter: {param}",
+                        path=path + (preset_key, param),
+                    )
 
                 # Special case: convert Name to string if not already
                 if param == "Name" and not isinstance(value, str):
@@ -170,40 +187,46 @@ def validate_preset(preset_data, path=()):
                     context=f"{preset_key}",
                     path=path + (preset_key, param),
                 )
-        
+
         # Check for required parameters
         for param, schema in PRESET_SCHEMA.items():
-            if schema.get('required', False) and param not in preset_value:
-                raise MissingRequiredParameterError(f"Missing required preset parameter: {param}", path=path + (preset_key, param))
+            if schema.get("required", False) and param not in preset_value:
+                raise MissingRequiredParameterError(
+                    f"Missing required preset parameter: {param}",
+                    path=path + (preset_key, param),
+                )
 
 
 def validate_channel(channel_data, channel_number, path=()):
     """
     Validate a channel against the schema.
-    
+
     Note: This function modifies the input channel_data dictionary in place by
     normalizing and validating parameter values (e.g., converting string numbers
     to numeric types).
-    
+
     Args:
         channel_data: Dictionary containing the channel data (will be modified in place)
         channel_number: Channel number
         path: Tuple representing the path to this channel in the overall structure
-        
+
     Raises:
         SchemaValidationError: If validation fails
     """
     # Validate channel parameters
     for param, value in list(channel_data.items()):
-        if param.startswith('Zone '):
+        if param.startswith("Zone "):
             # Validate zone
-            zone_number = int(param.split(' ')[1])
+            zone_number = int(param.split(" ")[1])
             validate_zone(value, channel_number, zone_number, path=path + (param,))
         else:
             # Validate channel parameter
             if param not in CHANNEL_SCHEMA:
-                raise InvalidParameterError(f"Invalid channel parameter: {param} in Channel {channel_number}", path=path + (param,))
-            
+                raise InvalidParameterError(
+                    f"Invalid channel parameter: {param} in Channel {channel_number}",
+                    path=path + (param,),
+                )
+
             channel_data[param] = _validate_parameter_value(
                 param,
                 value,
@@ -213,39 +236,49 @@ def validate_channel(channel_data, channel_number, path=()):
             )
 
     # Enforce zone count and order
-    zone_keys = [k for k in channel_data.keys() if k.startswith('Zone ')]
+    zone_keys = [k for k in channel_data.keys() if k.startswith("Zone ")]
     zone_numbers = []
     for k in zone_keys:
         try:
-            num = int(k.split(' ')[1])
+            num = int(k.split(" ")[1])
             zone_numbers.append(num)
         except (IndexError, ValueError):
-            raise InvalidParameterError(f"Invalid zone key format: {k}", path=path + (k,))
-    
+            raise InvalidParameterError(
+                f"Invalid zone key format: {k}", path=path + (k,)
+            )
+
     # Require at least one zone per channel
     if len(zone_numbers) == 0:
-        raise SchemaValidationError(f"Channel {channel_number} must have at least one zone", path=path)
-    
+        raise SchemaValidationError(
+            f"Channel {channel_number} must have at least one zone", path=path
+        )
+
     if len(zone_numbers) > 8:
-        raise SchemaValidationError(f"Channel {channel_number} has {len(zone_numbers)} zones, maximum allowed is 8", path=path)
+        raise SchemaValidationError(
+            f"Channel {channel_number} has {len(zone_numbers)} zones, maximum allowed is 8",
+            path=path,
+        )
     if sorted(zone_numbers) != list(range(1, len(zone_numbers) + 1)):
-        raise SchemaValidationError(f"Zone numbers in Channel {channel_number} must be sequential starting from 1", path=path)
+        raise SchemaValidationError(
+            f"Zone numbers in Channel {channel_number} must be sequential starting from 1",
+            path=path,
+        )
 
 
 def validate_zone(zone_data, channel_number, zone_number, path=()):
     """
     Validate a zone against the schema.
-    
+
     Note: This function modifies the input zone_data dictionary in place by
     normalizing and validating parameter values (e.g., converting string numbers
     to numeric types).
-    
+
     Args:
         zone_data: Dictionary containing the zone data (will be modified in place)
         channel_number: Channel number
         zone_number: Zone number
         path: Tuple representing the path to this zone in the overall structure
-        
+
     Raises:
         SchemaValidationError: If validation fails
     """
@@ -254,9 +287,9 @@ def validate_zone(zone_data, channel_number, zone_number, path=()):
         if param not in ZONE_SCHEMA:
             raise InvalidParameterError(
                 f"Invalid zone parameter: {param} in Channel {channel_number}, Zone {zone_number}",
-                path=path + (param,)
+                path=path + (param,),
             )
-        
+
         zone_data[param] = _validate_parameter_value(
             param,
             value,
@@ -264,180 +297,184 @@ def validate_zone(zone_data, channel_number, zone_number, path=()):
             f"Channel {channel_number}, Zone {zone_number}",
             path=path + (param,),
         )
-    
+
     # Check for required parameters
     for param, schema in ZONE_SCHEMA.items():
-        if schema.get('required', False) and param not in zone_data:
+        if schema.get("required", False) and param not in zone_data:
             raise MissingRequiredParameterError(
                 f"Missing required zone parameter: {param} in Channel {channel_number}, Zone {zone_number}",
-                path=path + (param,)
+                path=path + (param,),
             )
 
 
 def _validate_parameter_value(param, value, schema, context="", path=()):
     """
     Validate a parameter value against its schema.
-    
+
     Args:
         param: Parameter name
         value: Parameter value
         schema: Schema for the parameter
         context: Context for error messages (e.g., "Channel 1, Zone 2")
         path: Tuple representing the path to this parameter in the overall structure
-        
+
     Raises:
         SchemaValidationError: If validation fails
     """
-    param_type = schema['type']
+    param_type = schema["type"]
     context_str = f" in {context}" if context else ""
 
     # For numeric types, allow string representations and convert them
-    if param_type in ('integer', 'float'):
+    if param_type in ("integer", "float"):
         if isinstance(value, str):
             try:
-                if param_type == 'integer':
+                if param_type == "integer":
                     value = int(value)
                 else:
                     value = float(value)
             except ValueError:
                 raise InvalidValueError(
-                    f"Parameter {param}{context_str} must be a {param_type}, got string that cannot be converted: {value}",
-                    path=path
+                    f"Parameter {param}{context_str} must be a {param_type}, "
+                    f"got string that cannot be converted: {value}",
+                    path=path,
                 )
-    
+
     # Type validation
-    if param_type == 'string':
+    if param_type == "string":
         if not isinstance(value, str):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be a string, got {type(value).__name__}",
-                path=path
+                path=path,
             )
-        if 'max_length' in schema and len(value) > schema['max_length']:
+        if "max_length" in schema and len(value) > schema["max_length"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} exceeds maximum length of {schema['max_length']}",
-                path=path
+                path=path,
             )
-        if 'values' in schema and value not in schema['values']:
+        if "values" in schema and value not in schema["values"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be one of {schema['values']}, got {value}",
-                path=path
+                path=path,
             )
-    
-    elif param_type == 'integer':
+
+    elif param_type == "integer":
         if not isinstance(value, int):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be an integer, got {type(value).__name__}",
-                path=path
+                path=path,
             )
-        if 'min' in schema and value < schema['min']:
+        if "min" in schema and value < schema["min"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be at least {schema['min']}, got {value}",
-                path=path
+                path=path,
             )
-        if 'max' in schema and value > schema['max']:
+        if "max" in schema and value > schema["max"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be at most {schema['max']}, got {value} (outside allowed range)",
-                path=path
+                path=path,
             )
-        if 'values' in schema and value not in schema['values']:
+        if "values" in schema and value not in schema["values"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be one of {schema['values']}, got {value}",
-                path=path
+                path=path,
             )
-    
-    elif param_type == 'float':
+
+    elif param_type == "float":
         if not isinstance(value, (int, float)):
             raise InvalidValueError(
-                f"Parameter {param}{context_str} must be a numeric type (int or float), got {type(value).__name__}. String representations are not allowed.",
-                path=path
+                f"Parameter {param}{context_str} must be a numeric type (int or float), "
+                f"got {type(value).__name__}. String representations are not allowed.",
+                path=path,
             )
-        
+
         # Range validation for numeric types
-        if 'min' in schema and value < schema['min']:
+        if "min" in schema and value < schema["min"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be at least {schema['min']}, got {value} (outside allowed range)",
-                path=path
+                path=path,
             )
-        if 'max' in schema and value > schema['max']:
+        if "max" in schema and value > schema["max"]:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be at most {schema['max']}, got {value} (outside allowed range)",
-                path=path
+                path=path,
             )
-    
-    elif param_type == 'cv_input':
+
+    elif param_type == "cv_input":
         if not isinstance(value, str):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be a string, got {type(value).__name__}",
-                path=path
+                path=path,
             )
         if not re.match(CV_INPUT_PATTERN, value):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be in format '1A'-'8C' or 'Off', got {value}",
-                path=path
+                path=path,
             )
-    
-    elif param_type == 'cv_input_with_amount':
+
+    elif param_type == "cv_input_with_amount":
         if not isinstance(value, str):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be a string, got {type(value).__name__}",
-                path=path
+                path=path,
             )
         if not re.match(CV_INPUT_WITH_AMOUNT_PATTERN, value):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be in format '1A 0.50', got {value}",
-                path=path
+                path=path,
             )
-    
-    elif param_type == 'voltage':
+
+    elif param_type == "voltage":
         if not isinstance(value, str) and not isinstance(value, (int, float)):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be a number or string, got {type(value).__name__}",
-                path=path
+                path=path,
             )
-        
+
         # Convert to string if it's a number
         if isinstance(value, (int, float)):
             value = str(value)
-        
+
         if not re.match(VOLTAGE_PATTERN, value):
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be in format '+5.00' or '-3.50', got {value}",
-                path=path
+                path=path,
             )
-        
+
         # Check range
         try:
             float_val = float(value)
-            if 'min' in schema and float_val < schema['min']:
+            if "min" in schema and float_val < schema["min"]:
                 raise InvalidValueError(
-                    f"Parameter {param}{context_str} must be at least {schema['min']}, got {value} (outside allowed range)",
-                    path=path
+                    f"Parameter {param}{context_str} must be at least {schema['min']}, "
+                    f"got {value} (outside allowed range)",
+                    path=path,
                 )
-            if 'max' in schema and float_val > schema['max']:
+            if "max" in schema and float_val > schema["max"]:
                 raise InvalidValueError(
-                    f"Parameter {param}{context_str} must be at most {schema['max']}, got {value} (outside allowed range)",
-                    path=path
+                    f"Parameter {param}{context_str} must be at most {schema['max']}, "
+                    f"got {value} (outside allowed range)",
+                    path=path,
                 )
         except ValueError:
             raise InvalidValueError(
                 f"Parameter {param}{context_str} must be a valid numeric value, got {value}",
-                path=path
+                path=path,
             )
-    
-    elif param_type == 'pm_source':
+
+    elif param_type == "pm_source":
         if isinstance(value, int) and 1 <= value <= 8:
             return value
-        
+
         if isinstance(value, str):
-            if value in ['Sample Input Left', 'Sample Input Right']:
+            if value in ["Sample Input Left", "Sample Input Right"]:
                 return value
             if value.isdigit() and 1 <= int(value) <= 8:
                 return int(value)
-        
+
         raise InvalidValueError(
             f"Parameter {param}{context_str} must be a channel number (1-8) "
             f"or 'Sample Input Left/Right', got {value}",
-            path=path
+            path=path,
         )
 
     return value

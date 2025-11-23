@@ -1,28 +1,32 @@
 """YAML Parser module for Assimil8or preset files."""
 
 import os
+
 import yaml
-import re
 
 
 class PresetParseError(Exception):
     """Base exception for parse errors."""
+
     pass
 
 
 class YAMLSyntaxError(PresetParseError):
     """Exception raised for YAML syntax errors."""
+
     pass
 
 
 class InvalidPresetError(PresetParseError):
     """Exception raised for files that are not valid Assimil8or presets."""
+
     pass
 
 
 # Custom YAML loader to preserve string formatting for specific types of values
 class AssimPresetLoader(yaml.SafeLoader):
     """Custom YAML loader for Assimil8or presets."""
+
     pass
 
 
@@ -30,19 +34,19 @@ class AssimPresetLoader(yaml.SafeLoader):
 def construct_number(loader, node):
     """Custom constructor for numeric values to ensure proper type conversion."""
     value = loader.construct_scalar(node)
-    
+
     # Try to convert to float first (handles both integers and floats)
     try:
         # Remove any leading/trailing whitespace and handle signed numbers
         cleaned_value = value.strip()
-        
+
         # Convert to float, which handles both integer and floating-point formats
         numeric_value = float(cleaned_value)
-        
+
         # If the float is a whole number, convert to int
         if numeric_value.is_integer():
             return int(numeric_value)
-        
+
         return numeric_value
     except ValueError:
         # If conversion fails, return the original value
@@ -50,34 +54,38 @@ def construct_number(loader, node):
 
 
 # Register custom constructor
-AssimPresetLoader.add_constructor('tag:yaml.org,2002:float', construct_number)
-AssimPresetLoader.add_constructor('tag:yaml.org,2002:int', construct_number)
+AssimPresetLoader.add_constructor("tag:yaml.org,2002:float", construct_number)
+AssimPresetLoader.add_constructor("tag:yaml.org,2002:int", construct_number)
 
 
 def parse_yaml_file(file_path, return_line_map=False):
     """
     Parse an Assimil8or preset YAML file, optionally returning a mapping of key paths to line numbers.
     """
-    import collections
     import re
 
     def preprocess_assimil8or_yaml(content):
         """
         Preprocess Assimil8or YAML content to quote unquoted values starting with special characters.
         """
+
         def needs_quoting(value):
             # Check if value starts with special characters that need quoting
-            return bool(re.match(r'^[@#:\-\?]', value))
+            return bool(re.match(r"^[@#:\-\?]", value))
 
         processed_lines = []
         for line in content.splitlines():
             # Match lines with 'key : value' pattern
-            match = re.match(r'^(\s*[^:\s][^:]*)\s*:\s*(.+)$', line)
+            match = re.match(r"^(\s*[^:\s][^:]*)\s*:\s*(.+)$", line)
             if match:
                 key, value = match.groups()
                 value = value.strip()
                 # If value is unquoted and needs quoting, add quotes
-                if value and not (value.startswith('"') or value.startswith("'")) and needs_quoting(value):
+                if (
+                    value
+                    and not (value.startswith('"') or value.startswith("'"))
+                    and needs_quoting(value)
+                ):
                     # Escape existing quotes in value
                     value_escaped = value.replace('"', '\\"')
                     value = f'"{value_escaped}"'
@@ -91,7 +99,7 @@ def parse_yaml_file(file_path, return_line_map=False):
     if os.path.getsize(file_path) == 0:
         raise PresetParseError(f"Empty file: {file_path}")
 
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         raw_content = f.read()
 
     # Preprocess content to fix unquoted special values
@@ -110,7 +118,9 @@ def parse_yaml_file(file_path, return_line_map=False):
                 current_path = path + (key,)
                 # Recursively construct value
                 if isinstance(value_node, yaml.MappingNode):
-                    value = self.construct_mapping(value_node, deep=deep, path=current_path)
+                    value = self.construct_mapping(
+                        value_node, deep=deep, path=current_path
+                    )
                 else:
                     value = self.construct_object(value_node, deep=deep)
                 mapping[key] = value
@@ -124,11 +134,11 @@ def parse_yaml_file(file_path, return_line_map=False):
         line_map = loader.line_map
     except yaml.YAMLError as e:
         line_info = ""
-        if hasattr(e, 'problem_mark'):
+        if hasattr(e, "problem_mark"):
             line_info = f" on line {e.problem_mark.line + 1}"
         raise YAMLSyntaxError(f"YAML syntax error{line_info}: {str(e)}")
     except Exception as e:
-        line_match = re.search(r'line (\d+)', str(e))
+        line_match = re.search(r"line (\d+)", str(e))
         if line_match:
             line_info = f" on line {line_match.group(1)}"
             raise YAMLSyntaxError(f"YAML syntax error{line_info}: {str(e)}")
@@ -136,8 +146,8 @@ def parse_yaml_file(file_path, return_line_map=False):
 
     if not data:
         raise InvalidPresetError(f"Empty or invalid preset file: {file_path}")
-    
-    if not any(key.startswith('Preset ') for key in data.keys()):
+
+    if not any(key.startswith("Preset ") for key in data.keys()):
         raise InvalidPresetError(f"Not a valid Assimil8or preset format: {file_path}")
 
     if return_line_map:

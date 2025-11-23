@@ -4,12 +4,12 @@ import pytest
 
 # Import the module that doesn't exist yet (this will cause the test to fail initially)
 from a8_validate.cross_reference_validator import (
-    validate_relationships,
-    CrossReferenceError,
     ChannelModeError,
+    CrossReferenceError,
+    CVInputReferenceError,
     LoopConfigurationError,
     ZoneVoltageRangeError,
-    CVInputReferenceError,
+    validate_relationships,
 )
 from a8_validate.schema_validator import validate_preset
 
@@ -29,25 +29,20 @@ class TestCrossReferenceValidator:
                     "LoopMode": 1,  # Loop mode on
                     "LoopStart": 100,  # LoopStart provided when LoopMode is on
                     "LoopLength": 1000,  # LoopLength provided when LoopMode is on
-                    "Zone 1": {
-                        "Sample": "test.wav",
-                        "MinVoltage": "+5.00"
-                    },
+                    "Zone 1": {"Sample": "test.wav", "MinVoltage": "+5.00"},
                     "Zone 2": {
                         "Sample": "test2.wav",
-                        "MinVoltage": "+2.50"  # Valid sequence of voltages
-                    }
+                        "MinVoltage": "+2.50",  # Valid sequence of voltages
+                    },
                 },
                 "Channel 2": {
                     "ChannelMode": 1,  # Link mode, which is valid since it's below a Master channel
                     "Pitch": 0.00,
-                    "Zone 1": {
-                        "Sample": "test3.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test3.wav"},
+                },
             }
         }
-        
+
         # Validation should succeed without raising any exceptions
         validate_relationships(valid_preset)
 
@@ -61,21 +56,19 @@ class TestCrossReferenceValidator:
                     "Pitch": 0.00,
                     "LoopMode": 1,  # Loop mode on
                     "LoopStart": 100,  # Only LoopStart provided
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_with_only_start)
-        
+
         # Error should mention that both LoopStart and LoopLength must be defined together
         assert "LoopStart" in str(exc_info.value)
         assert "LoopLength" in str(exc_info.value)
-        
+
         # Test with only LoopLength
         preset_with_only_length = {
             "Preset 1": {
@@ -84,17 +77,15 @@ class TestCrossReferenceValidator:
                     "Pitch": 0.00,
                     "LoopMode": 1,  # Loop mode on
                     "LoopLength": 1000,  # Only LoopLength provided
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_with_only_length)
-        
+
         # Error should mention that both LoopStart and LoopLength must be defined together
         assert "LoopStart" in str(exc_info.value)
         assert "LoopLength" in str(exc_info.value)
@@ -108,13 +99,11 @@ class TestCrossReferenceValidator:
                     "Pitch": 0.00,
                     "LoopMode": 1,  # Loop mode on
                     # No explicit LoopStart or LoopLength
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should succeed without raising exceptions
         validate_relationships(preset_with_default_loop)
 
@@ -130,21 +119,19 @@ class TestCrossReferenceValidator:
                     "LoopLengthIsEnd": 0,  # Incorrect flag
                     "LoopStart": 100,
                     "LoopLength": 1000,
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_mode1_incorrect_flag)
-        
+
         # Error should mention LoopMode and LoopLengthIsEnd
         assert "LoopMode 1" in str(exc_info.value)
         assert "LoopLengthIsEnd" in str(exc_info.value)
-        
+
         # Test LoopMode 2 (Start/Length) with incorrect LoopLengthIsEnd
         preset_mode2_incorrect_flag = {
             "Preset 1": {
@@ -155,17 +142,15 @@ class TestCrossReferenceValidator:
                     "LoopLengthIsEnd": 1,  # Incorrect flag
                     "LoopStart": 100,
                     "LoopLength": 1000,
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_mode2_incorrect_flag)
-        
+
         # Error should mention LoopMode and LoopLengthIsEnd
         assert "LoopMode 2" in str(exc_info.value)
         assert "LoopLengthIsEnd" in str(exc_info.value)
@@ -179,20 +164,20 @@ class TestCrossReferenceValidator:
                     "Pitch": 0.00,
                     "Zone 1": {
                         "Sample": "test.wav",
-                        "MinVoltage": "+2.50"  # This voltage is lower than Zone 2's MinVoltage
+                        "MinVoltage": "+2.50",  # This voltage is lower than Zone 2's MinVoltage
                     },
                     "Zone 2": {
                         "Sample": "test2.wav",
-                        "MinVoltage": "+5.00"  # This voltage is higher than Zone 1's MinVoltage
-                    }
-                }
+                        "MinVoltage": "+5.00",  # This voltage is higher than Zone 1's MinVoltage
+                    },
+                },
             }
         }
-        
+
         # Validation should raise ZoneVoltageRangeError
         with pytest.raises(ZoneVoltageRangeError) as exc_info:
             validate_relationships(preset_with_invalid_voltages)
-        
+
         # Error should mention the voltage range issue
         assert "voltage" in str(exc_info.value).lower()
         assert "Zone 1" in str(exc_info.value)
@@ -206,17 +191,15 @@ class TestCrossReferenceValidator:
                 "Channel 1": {
                     "ChannelMode": 1,  # Link mode, but there's no Master channel above it
                     "Pitch": 0.00,
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise ChannelModeError
         with pytest.raises(ChannelModeError) as exc_info:
             validate_relationships(preset_with_invalid_link)
-        
+
         # Error should mention the channel mode issue
         assert "Link" in str(exc_info.value)
         assert "Master" in str(exc_info.value)
@@ -229,17 +212,15 @@ class TestCrossReferenceValidator:
                 "Channel 1": {
                     "ChannelMode": 3,  # Cycle mode, but there's no Master channel above it
                     "Pitch": 0.00,
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise ChannelModeError
         with pytest.raises(ChannelModeError) as exc_info:
             validate_relationships(preset_with_invalid_cycle)
-        
+
         # Error should mention the channel mode issue
         assert "Cycle" in str(exc_info.value)
         assert "Master" in str(exc_info.value)
@@ -250,19 +231,14 @@ class TestCrossReferenceValidator:
             "Preset 1": {
                 "Name": "Test Preset",
                 "XfadeACV": "9A",  # Invalid CV input (should be 1A-8C)
-                "Channel 1": {
-                    "Pitch": 0.00,
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                "Channel 1": {"Pitch": 0.00, "Zone 1": {"Sample": "test.wav"}},
             }
         }
-        
+
         # Validation should raise CVInputReferenceError
         with pytest.raises(CVInputReferenceError) as exc_info:
             validate_relationships(preset_with_invalid_cv)
-        
+
         # Error should mention the invalid CV input
         assert "9A" in str(exc_info.value)
         assert "XfadeACV" in str(exc_info.value)
@@ -276,21 +252,22 @@ class TestCrossReferenceValidator:
                     "Pitch": 0.00,
                     "SampleStart": 1000,  # Start point is after end point
                     "SampleEnd": 500,
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test.wav"},
+                },
             }
         }
-        
+
         # Validation should raise CrossReferenceError
         with pytest.raises(CrossReferenceError) as exc_info:
             validate_relationships(preset_with_invalid_sample_points)
-        
+
         # Error should mention the sample point issue
         assert "SampleStart" in str(exc_info.value)
         assert "SampleEnd" in str(exc_info.value)
-        assert "greater than" in str(exc_info.value).lower() or "after" in str(exc_info.value).lower()
+        assert (
+            "greater than" in str(exc_info.value).lower()
+            or "after" in str(exc_info.value).lower()
+        )
 
     def test_sample_start_end_as_strings(self):
         """Ensure numeric strings are properly validated for sample boundaries."""
@@ -323,23 +300,19 @@ class TestCrossReferenceValidator:
                 "Channel 1": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
+                    "Zone 1": {"Sample": "test.wav"},
                 },
                 "Channel 2": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",  # Same crossfade group as Channel 1
-                    "Zone 1": {
-                        "Sample": "test2.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test2.wav"},
+                },
             }
         }
-        
+
         # Validation should succeed without raising any exceptions
         validate_relationships(valid_crossfade_preset)
-        
+
         # Test with an invalid crossfade group (only 1 channel)
         invalid_crossfade_preset = {
             "Preset 1": {
@@ -349,28 +322,27 @@ class TestCrossReferenceValidator:
                 "Channel 1": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",  # Only one channel in this group
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
+                    "Zone 1": {"Sample": "test.wav"},
                 },
                 "Channel 2": {
                     "Pitch": 0.00,
                     "XfadeGroup": "B",  # Different crossfade group
-                    "Zone 1": {
-                        "Sample": "test2.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test2.wav"},
+                },
             }
         }
-        
+
         # Validation should raise CrossReferenceError
         with pytest.raises(CrossReferenceError) as exc_info:
             validate_relationships(invalid_crossfade_preset)
-        
+
         # Error should mention the crossfade group issue
         assert "XfadeGroup" in str(exc_info.value)
         assert "A" in str(exc_info.value)
-        assert "minimum" in str(exc_info.value).lower() or "at least" in str(exc_info.value).lower()
+        assert (
+            "minimum" in str(exc_info.value).lower()
+            or "at least" in str(exc_info.value).lower()
+        )
 
     def test_missing_crossfade_cv(self):
         """Test validation of crossfade groups without a corresponding CV input."""
@@ -381,24 +353,20 @@ class TestCrossReferenceValidator:
                 "Channel 1": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
+                    "Zone 1": {"Sample": "test.wav"},
                 },
                 "Channel 2": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",
-                    "Zone 1": {
-                        "Sample": "test2.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test2.wav"},
+                },
             }
         }
-        
+
         # Validation should raise CrossReferenceError
         with pytest.raises(CrossReferenceError) as exc_info:
             validate_relationships(missing_cv_preset)
-        
+
         # Error should mention the missing CV for the crossfade group
         assert "XfadeACV" in str(exc_info.value)
         assert "XfadeGroup" in str(exc_info.value)
@@ -416,34 +384,26 @@ class TestCrossReferenceValidator:
                 "Channel 1": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",
-                    "Zone 1": {
-                        "Sample": "test.wav"
-                    }
+                    "Zone 1": {"Sample": "test.wav"},
                 },
                 "Channel 2": {
                     "Pitch": 0.00,
                     "XfadeGroup": "A",
-                    "Zone 1": {
-                        "Sample": "test2.wav"
-                    }
+                    "Zone 1": {"Sample": "test2.wav"},
                 },
                 "Channel 3": {
                     "Pitch": 0.00,
                     "XfadeGroup": "B",
-                    "Zone 1": {
-                        "Sample": "test3.wav"
-                    }
+                    "Zone 1": {"Sample": "test3.wav"},
                 },
                 "Channel 4": {
                     "Pitch": 0.00,
                     "XfadeGroup": "B",
-                    "Zone 1": {
-                        "Sample": "test4.wav"
-                    }
-                }
+                    "Zone 1": {"Sample": "test4.wav"},
+                },
             }
         }
-        
+
         # Validation should succeed without raising any exceptions
         validate_relationships(complex_crossfade_preset)
 
@@ -458,13 +418,13 @@ class TestCrossReferenceValidator:
                     # No LoopStart or LoopLength at channel level
                     "Zone 1": {
                         "Sample": "test.wav",
-                        "LoopStart": 100,     # LoopStart defined in zone
-                        "LoopLength": 1000    # LoopLength defined in zone
-                    }
-                }
+                        "LoopStart": 100,  # LoopStart defined in zone
+                        "LoopLength": 1000,  # LoopLength defined in zone
+                    },
+                },
             }
         }
-        
+
         # Validation should succeed without raising exceptions
         validate_relationships(preset_with_loop_params_in_zone)
 
@@ -480,11 +440,11 @@ class TestCrossReferenceValidator:
                     "Zone 1": {
                         "Sample": "test.wav"
                         # No LoopStart or LoopLength in zone either
-                    }
-                }
+                    },
+                },
             }
         }
-        
+
         # Validation should succeed without raising exceptions
         validate_relationships(preset_with_no_loop_params)
 
@@ -498,14 +458,14 @@ class TestCrossReferenceValidator:
                     # No LoopMode at channel level
                     "Zone 1": {
                         "Sample": "test.wav",
-                        "LoopMode": 1,        # Loop mode on at zone level
-                        "LoopStart": 100,     # LoopStart defined in same zone
-                        "LoopLength": 1000    # LoopLength defined in same zone
-                    }
-                }
+                        "LoopMode": 1,  # Loop mode on at zone level
+                        "LoopStart": 100,  # LoopStart defined in same zone
+                        "LoopLength": 1000,  # LoopLength defined in same zone
+                    },
+                },
             }
         }
-        
+
         # Validation should succeed without raising exceptions
         validate_relationships(preset_with_zone_loop_mode)
 
@@ -516,16 +476,16 @@ class TestCrossReferenceValidator:
                 "Name": "Test Preset",
                 "Channel 1": {
                     "Pitch": 0.00,
-                    "LoopStart": 100,     # LoopStart defined at channel level
-                    "LoopLength": 1000,   # LoopLength defined at channel level
+                    "LoopStart": 100,  # LoopStart defined at channel level
+                    "LoopLength": 1000,  # LoopLength defined at channel level
                     "Zone 1": {
                         "Sample": "test.wav",
-                        "LoopMode": 1     # Loop mode on at zone level, should inherit parameters
-                    }
-                }
+                        "LoopMode": 1,  # Loop mode on at zone level, should inherit parameters
+                    },
+                },
             }
         }
-        
+
         # Validation should succeed without raising exceptions
         validate_relationships(preset_with_inherited_params)
 
@@ -539,17 +499,17 @@ class TestCrossReferenceValidator:
                     # No LoopStart or LoopLength at channel level
                     "Zone 1": {
                         "Sample": "test.wav",
-                        "LoopMode": 1     # Loop mode on at zone level
+                        "LoopMode": 1,  # Loop mode on at zone level
                         # No LoopStart or LoopLength in zone
-                    }
-                }
+                    },
+                },
             }
         }
-        
+
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_with_zone_no_params)
-        
+
         # Error should mention missing loop parameters for zone
         assert "Zone" in str(exc_info.value)
         assert "LoopStart" in str(exc_info.value) or "LoopLength" in str(exc_info.value)
@@ -558,22 +518,22 @@ class TestCrossReferenceValidator:
         """Test validation with mixed inheritance of loop parameters."""
         preset_with_mixed_inheritance = {
             "Preset 1": {
-                "Name": "Test Preset", 
+                "Name": "Test Preset",
                 "Channel 1": {
-                    "LoopMode": 1,        # Loop mode on at channel level
-                    "LoopStart": 100,     # LoopStart at channel level
+                    "LoopMode": 1,  # Loop mode on at channel level
+                    "LoopStart": 100,  # LoopStart at channel level
                     # No LoopLength at channel level
                     "Zone 1": {
                         "Sample": "test.wav",
-                        "LoopLength": 1000  # LoopLength in zone, should complement channel LoopStart
-                    }
-                }
+                        "LoopLength": 1000,  # LoopLength in zone, should complement channel LoopStart
+                    },
+                },
             }
         }
-        
+
         # Validation should raise LoopConfigurationError
         with pytest.raises(LoopConfigurationError) as exc_info:
             validate_relationships(preset_with_mixed_inheritance)
-        
+
         # Error should mention missing LoopLength
         assert "LoopLength" in str(exc_info.value)

@@ -1,16 +1,17 @@
 """Tests for the YAML parser component."""
 
 import os
-import pytest
 import tempfile
 from unittest import mock
 
+import pytest
+
 # Import the module that doesn't exist yet (this will cause the test to fail initially)
 from a8_validate.yaml_parser import (
-    parse_yaml_file,
+    InvalidPresetError,
     PresetParseError,
     YAMLSyntaxError,
-    InvalidPresetError,
+    parse_yaml_file,
 )
 
 
@@ -27,7 +28,7 @@ class TestYAMLParser:
       Sample : test.wav
 """
         # Create a temporary file with valid YAML content
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp.write(valid_yaml)
             temp_path = temp.name
 
@@ -62,7 +63,7 @@ class TestYAMLParser:
     This is another improperly indented line
 """
         # Create a temporary file with invalid YAML content
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp.write(invalid_yaml)
             temp_path = temp.name
 
@@ -70,7 +71,7 @@ class TestYAMLParser:
             # Parsing should raise a YAMLSyntaxError
             with pytest.raises(YAMLSyntaxError) as exc_info:
                 parse_yaml_file(temp_path)
-            
+
             # The error should contain line number information
             assert "line" in str(exc_info.value).lower()
             assert "indentation" in str(exc_info.value).lower()
@@ -85,7 +86,7 @@ class TestYAMLParser:
   Key2: Value2
 """
         # Create a temporary file with non-preset YAML content
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp.write(non_preset_yaml)
             temp_path = temp.name
 
@@ -93,7 +94,7 @@ class TestYAMLParser:
             # Parsing should raise an InvalidPresetError
             with pytest.raises(InvalidPresetError) as exc_info:
                 parse_yaml_file(temp_path)
-            
+
             # The error should mention the preset format
             assert "preset" in str(exc_info.value).lower()
             assert "format" in str(exc_info.value).lower()
@@ -104,14 +105,14 @@ class TestYAMLParser:
     def test_empty_file(self):
         """Test handling of empty files."""
         # Create an empty temporary file
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp_path = temp.name
 
         try:
             # Parsing should raise a PresetParseError
             with pytest.raises(PresetParseError) as exc_info:
                 parse_yaml_file(temp_path)
-            
+
             # The error should mention the file is empty
             assert "empty" in str(exc_info.value).lower()
         finally:
@@ -122,7 +123,7 @@ class TestYAMLParser:
         """Test handling of non-existent files."""
         # Generate a path to a file that doesn't exist
         nonexistent_path = tempfile.mktemp()
-        
+
         # Parsing should raise a FileNotFoundError
         with pytest.raises(FileNotFoundError):
             parse_yaml_file(nonexistent_path)
@@ -138,17 +139,17 @@ class TestYAMLParser:
       Sample : test.wav
 """
         # Create a temporary file with YAML content that has an error on line 5
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp.write(yaml_with_error_on_line_5)
             temp_path = temp.name
 
         try:
             # Mock the YAML parser to raise an exception with line information
-            with mock.patch('yaml.safe_load', side_effect=Exception("Error on line 5")):
+            with mock.patch("yaml.safe_load", side_effect=Exception("Error on line 5")):
                 # Parsing should raise a YAMLSyntaxError
                 with pytest.raises(YAMLSyntaxError) as exc_info:
                     parse_yaml_file(temp_path)
-                
+
                 # The error should contain the line number
                 assert "line 5" in str(exc_info.value)
         finally:
@@ -182,7 +183,7 @@ class TestYAMLParser:
       LoopLength : 1000
 """
         # Create a temporary file with complex YAML content
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp.write(complex_yaml)
             temp_path = temp.name
 
@@ -199,30 +200,34 @@ class TestYAMLParser:
             assert preset["Name"] == "Spectral Percussion Morphology"
             assert preset["XfadeACV"] == "1A"
             assert abs(preset["XfadeAWidth"] - 9.10) < 1e-6  # Check as float
-            
+
             # Check Channel 1
             channel1 = preset["Channel 1"]
             assert abs(float(channel1["Pitch"]) + 12.00) < 1e-6  # Check as float
-            assert abs(float(channel1["Level"]) + 3.0) < 1e-6    # Check as float
+            assert abs(float(channel1["Level"]) + 3.0) < 1e-6  # Check as float
             assert channel1["PitchCV"] == "0A 0.50"
-            
+
             # Check Zones in Channel 1
             assert channel1["Zone 1"]["Sample"] == "BD_Thump_1.wav"
             assert abs(float(channel1["Zone 1"]["MinVoltage"]) - 5.0) < 1e-6
             assert channel1["Zone 2"]["Sample"] == "BD_Elec_1.wav"
             assert abs(float(channel1["Zone 2"]["MinVoltage"]) - 2.5) < 1e-6
-            
+
             # Check Channel 2
             channel2 = preset["Channel 2"]
-            assert channel2["ChannelMode"] == 1   # This should remain an integer
+            assert channel2["ChannelMode"] == 1  # This should remain an integer
             assert abs(float(channel2["Pitch"]) - 7.0) < 1e-6  # Check as float
             assert abs(float(channel2["Level"]) + 6.0) < 1e-6  # Check as float
-            
+
             # Check Zone in Channel 2
             assert channel2["Zone 1"]["Sample"] == "Acid_1.wav"
             assert channel2["Zone 1"]["LoopMode"] == 1  # This should remain an integer
-            assert channel2["Zone 1"]["LoopStart"] == 100  # This should remain an integer
-            assert channel2["Zone 1"]["LoopLength"] == 1000  # This should remain an integer
+            assert (
+                channel2["Zone 1"]["LoopStart"] == 100
+            )  # This should remain an integer
+            assert (
+                channel2["Zone 1"]["LoopLength"] == 1000
+            )  # This should remain an integer
         finally:
             # Clean up
             os.unlink(temp_path)
@@ -238,17 +243,17 @@ class TestYAMLParser:
     PMIndexMod : 3C 1.00
 """
         # Create a temporary file with YAML content containing CV inputs
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
             temp.write(yaml_with_cv_inputs)
             temp_path = temp.name
 
         try:
             # Parse the file
             result = parse_yaml_file(temp_path)
-            
+
             # Check that parsing was successful
             assert result is not None
-            
+
             # Check that CV inputs were parsed correctly as strings (not parsed into components yet)
             channel = result["Preset 1"]["Channel 1"]
             assert channel["PitchCV"] == "1A 0.50"

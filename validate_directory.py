@@ -5,22 +5,32 @@ Assimil8or Preset Directory Validator
 This script validates all Assimil8or preset files (.yml) in a specified directory.
 """
 
-import os
-import sys
 import argparse
+import sys
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Tuple
 
-from a8_validate.yaml_parser import parse_yaml_file, YAMLSyntaxError, InvalidPresetError, PresetParseError
-from a8_validate.schema_validator import validate_preset, SchemaValidationError
-from a8_validate.cross_reference_validator import validate_relationships, CrossReferenceError
-from a8_validate.file_system_validator import validate_sample_files, FileSystemValidationError
+from a8_validate.cross_reference_validator import (
+    CrossReferenceError,
+    validate_relationships,
+)
+from a8_validate.file_system_validator import (
+    FileSystemValidationError,
+    validate_sample_files,
+)
+from a8_validate.schema_validator import SchemaValidationError, validate_preset
+from a8_validate.yaml_parser import (
+    InvalidPresetError,
+    PresetParseError,
+    YAMLSyntaxError,
+    parse_yaml_file,
+)
 
 
 def find_yml_files(directory: str) -> List[Path]:
     """
     Find all .yml files in the specified directory, excluding system files.
-    
+
     Ignores:
     - folderprefs.yml
     - lastfolder.yml
@@ -31,37 +41,40 @@ def find_yml_files(directory: str) -> List[Path]:
     dir_path = Path(directory)
     if not dir_path.exists() or not dir_path.is_dir():
         raise ValueError(f"Directory not found: {directory}")
-    
+
     # Get all .yml files
     all_yml_files = list(dir_path.glob("*.yml"))
-    
+
     # Define files to ignore
     ignore_patterns = [
         "folderprefs.yml",
         "lastfolder.yml",
         "lastpreset.yml",
     ]
-    
+
     # Filter out ignored files
     return [
-        f for f in all_yml_files 
-        if (f.name not in ignore_patterns and 
-            not f.name.startswith("midi") and 
-            not f.name.startswith("._"))
+        f
+        for f in all_yml_files
+        if (
+            f.name not in ignore_patterns
+            and not f.name.startswith("midi")
+            and not f.name.startswith("._")
+        )
     ]
 
 
 def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
     """
     Validate a preset file.
-    
+
     Returns:
         Tuple of (success, message)
     """
     try:
         # Parse the YAML file with line number preservation
         preset_data, line_map = parse_yaml_file(str(file_path), return_line_map=True)
-        
+
         # Validate schema
         try:
             validate_preset(preset_data)
@@ -71,8 +84,9 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
             preset_key = None
             msg = str(e)
             import re
-            param_match = re.search(r'Parameter (\w+)', msg)
-            preset_match = re.search(r'in (Preset \d+)', msg)
+
+            param_match = re.search(r"Parameter (\w+)", msg)
+            preset_match = re.search(r"in (Preset \d+)", msg)
             if param_match:
                 param_name = param_match.group(1)
             if preset_match:
@@ -93,21 +107,21 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
                     if path and all(p == k for p, k in zip(path, key_path)):
                         line_number = line_map[key_path]
                         break
-            
+
             if line_number:
                 raise SchemaValidationError(f"{e} (line {line_number})") from e
             else:
                 raise
-        
+
         # Validate cross-references
         validate_relationships(preset_data)
-        
+
         # Validate sample files
         if sample_dir:
             validate_sample_files(preset_data, str(sample_dir))
-        
+
         return True, "Valid"
-    
+
     except (YAMLSyntaxError, InvalidPresetError, PresetParseError) as e:
         return False, f"YAML parsing error: {e}"
     except SchemaValidationError as e:
@@ -121,56 +135,72 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate Assimil8or preset files in a directory")
-    parser.add_argument("directory", help="Directory containing preset .yml files and samples")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
+    parser = argparse.ArgumentParser(
+        description="Validate Assimil8or preset files in a directory"
+    )
+    parser.add_argument(
+        "directory", help="Directory containing preset .yml files and samples"
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
+    )
     parser.add_argument("--output", "-o", help="Output file for results (optional)")
     args = parser.parse_args()
-    
+
     output_file = None
     if args.output:
-        output_file = open(args.output, 'w')
+        output_file = open(args.output, "w")
+
         def output_print(*args, **kwargs):
             # Handle end and flush separately to avoid issues
-            end_char = kwargs.pop('end', '\n')
-            flush_flag = kwargs.pop('flush', False)
+            end_char = kwargs.pop("end", "\n")
+            flush_flag = kwargs.pop("flush", False)
             # Print to file
             print(*args, **kwargs, file=output_file, end=end_char)
             # Print to stdout
             print(*args, **kwargs, end=end_char, flush=flush_flag)
             if flush_flag:
                 output_file.flush()
+
     else:
         output_print = print
-    
+
     try:
         yml_files = find_yml_files(args.directory)
         sample_dir = Path(args.directory)
-        
+
         if not yml_files:
             output_print("No .yml files found in {}".format(args.directory))
             return
-        
-        output_print("Found {} preset files. Starting validation...".format(len(yml_files)))
-        
+
+        output_print(
+            "Found {} preset files. Starting validation...".format(len(yml_files))
+        )
+
         results = []
         for file_path in yml_files:
             if args.verbose:
-                output_print("Validating {}... ".format(file_path.name), end="", flush=True)
-            
+                output_print(
+                    "Validating {}... ".format(file_path.name), end="", flush=True
+                )
+
             success, message = validate_preset_file(file_path, sample_dir)
             results.append((file_path, success, message))
-            
+
             if args.verbose:
                 status = "✓ VALID" if success else "✗ INVALID"
                 output_print(status)
                 if not success:
                     output_print("  Error: {}".format(message))
-        
+
         # Print summary
         valid_count = sum(1 for _, success, _ in results if success)
-        output_print("\nValidation complete: {}/{}  files valid".format(valid_count, len(results)))
-        
+        output_print(
+            "\nValidation complete: {}/{}  files valid".format(
+                valid_count, len(results)
+            )
+        )
+
         # Print details for invalid files
         invalid_files = [(path, msg) for path, success, msg in results if not success]
         if invalid_files:
@@ -178,17 +208,18 @@ def main():
             invalid_files.sort(key=lambda x: x[0].name)
             for path, message in invalid_files:
                 output_print("  {}: {}".format(path.name, message))
-    
+
     except Exception as e:
         output_print("Error: {}".format(e))
         import traceback
+
         # Always write traceback to stderr, not output file
         traceback.print_exc(file=sys.stderr)
         return 1
     finally:
         if output_file:
             output_file.close()
-    
+
     return 0
 
 

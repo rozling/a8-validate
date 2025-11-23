@@ -29,7 +29,12 @@ jobs:
       run: |
         safety check --file requirements.txt || true
     
-    - name: Run pip-audit
+    - name: Install project dependencies first
       run: |
-        pip-audit --requirement requirements.txt || true
+        pip install -r requirements.txt
+    
+    - name: Run pip-audit (on installed packages)
+      run: |
+        pip-audit --desc || echo "pip-audit completed with warnings (some transitive dependencies may have build issues)"
+      continue-on-error: true
 
