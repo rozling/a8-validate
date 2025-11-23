@@ -11,7 +11,7 @@ This is a python library / set of programs which:
 - Parse Assimil8or `.yml` preset files
 - Enforce the preset schema (inferred from existing A8 presets)
 - Check channel/zone cross-references
-- Ensure referenced WAV files exist and make sense
+- Validate referenced WAV files exist and are compatible (checks format, channels 1-2, sample rates 44.1/48/96/192kHz, sample width 8/16/24/32 bits, and that loop/start/end positions don't exceed file length)
 
 Use them to:
 - Run before copying presets to your card so you catch problems immediately.
