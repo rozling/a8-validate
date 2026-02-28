@@ -16,6 +16,8 @@ from a8_validate.cross_reference_validator import (
 )
 from a8_validate.file_system_validator import (
     FileSystemValidationError,
+    InvalidPresetFilenameError,
+    validate_preset_filename,
     validate_sample_files,
 )
 from a8_validate.schema_validator import SchemaValidationError, validate_preset
@@ -72,6 +74,9 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
         Tuple of (success, message)
     """
     try:
+        # Validate filename format first
+        validate_preset_filename(file_path.name)
+
         # Parse the YAML file with line number preservation
         preset_data, line_map = parse_yaml_file(str(file_path), return_line_map=True)
 
@@ -122,6 +127,8 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
 
         return True, "Valid"
 
+    except InvalidPresetFilenameError as e:
+        return False, f"Filename error: {e}"
     except (YAMLSyntaxError, InvalidPresetError, PresetParseError) as e:
         return False, f"YAML parsing error: {e}"
     except SchemaValidationError as e:

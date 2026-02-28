@@ -8,9 +8,11 @@ import pytest
 # Import the module that doesn't exist yet (this will cause the test to fail initially)
 from a8_validate.file_system_validator import (
     FileSystemValidationError,
+    InvalidPresetFilenameError,
     InvalidSampleFormatError,
     MemoryLimitExceededError,
     SampleFileNotFoundError,
+    validate_preset_filename,
     validate_sample_files,
 )
 
@@ -263,3 +265,50 @@ class TestFileSystemValidator:
             # Error should mention the missing file
             assert "missing.wav" in str(exc_info.value)
             assert "Channel 4" in str(exc_info.value)
+
+    def test_valid_preset_filename(self):
+        """Test validation of valid preset filenames."""
+        # Test valid filenames
+        valid_filenames = [
+            "prst000.yml",
+            "prst001.yml",
+            "prst042.yml",
+            "prst123.yml",
+            "prst999.yml",
+        ]
+
+        for filename in valid_filenames:
+            # Should not raise any exception
+            validate_preset_filename(filename)
+
+    def test_invalid_preset_filename_case(self):
+        """Test validation fails for uppercase filenames."""
+        invalid_filenames = [
+            "PRST001.yml",
+            "Prst001.yml",
+            "prst001.YML",
+            "PrSt001.Yml",
+        ]
+
+        for filename in invalid_filenames:
+            with pytest.raises(InvalidPresetFilenameError) as exc_info:
+                validate_preset_filename(filename)
+            assert "lowercase" in str(exc_info.value).lower()
+
+    def test_invalid_preset_filename_format(self):
+        """Test validation fails for incorrectly formatted filenames."""
+        invalid_filenames = [
+            "preset001.yml",  # Wrong prefix
+            "prst1.yml",  # Missing digits
+            "prst01.yml",  # Only 2 digits
+            "prst001.txt",  # Wrong extension
+            "prst001",  # No extension
+            "prst1000.yml",  # Too many digits
+            "prstabc.yml",  # Non-numeric
+            "test.yml",  # Completely wrong format
+        ]
+
+        for filename in invalid_filenames:
+            with pytest.raises(InvalidPresetFilenameError) as exc_info:
+                validate_preset_filename(filename)
+            assert "format" in str(exc_info.value).lower() or "lowercase" in str(exc_info.value).lower()

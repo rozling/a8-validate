@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Added
+- Added preset filename validation:
+  - Presets must follow the format `prstxxx.yml` where `xxx` is 000-999
+  - Filenames must be lowercase
+  - Invalid filenames will cause validation to fail with a clear error message
+
 ## 23 November 2025
 
 ### Added

@@ -19,7 +19,7 @@
   "[python]": {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": "explicit"
     },
     "editor.rulers": [120]
   },
@@ -34,6 +34,9 @@
   ],
   "python.testing.cwd": "${workspaceFolder}",
   "python.analysis.extraPaths": [
+    "${workspaceFolder}"
+  ],
+  "cursorpyright.analysis.extraPaths": [
     "${workspaceFolder}"
   ]
 }

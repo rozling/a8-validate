@@ -1,6 +1,7 @@
 """File system validator module for Assimil8or preset files."""
 
 import os
+import re
 import wave
 
 
@@ -24,6 +25,12 @@ class InvalidSampleFormatError(FileSystemValidationError):
 
 class MemoryLimitExceededError(FileSystemValidationError):
     """Exception raised when total memory usage exceeds the limit."""
+
+    pass
+
+
+class InvalidPresetFilenameError(FileSystemValidationError):
+    """Exception raised when a preset filename does not follow the required format."""
 
     pass
 
@@ -310,3 +317,40 @@ def calculate_total_memory(preset_data, folder_path):
                 )
 
     return total_bytes
+
+
+def validate_preset_filename(filename):
+    """
+    Validate that a preset filename follows the required format.
+
+    Presets must follow the format prstxxx.yml where xxx is 000-999.
+    The filename must be lowercase.
+
+    Args:
+        filename: The filename to validate (e.g., "prst001.yml")
+
+    Raises:
+        InvalidPresetFilenameError: If the filename does not match the required format
+    """
+    # Check if filename is lowercase
+    if filename != filename.lower():
+        raise InvalidPresetFilenameError(
+            f"Preset filename '{filename}' must be lowercase (expected: '{filename.lower()}')"
+        )
+
+    # Check if filename matches the pattern prstxxx.yml where xxx is 000-999
+    pattern = r"^prst\d{3}\.yml$"
+    if not re.match(pattern, filename):
+        raise InvalidPresetFilenameError(
+            f"Preset filename '{filename}' does not match required format 'prstxxx.yml' "
+            f"(where xxx is 000-999)"
+        )
+
+    # Extract the number part and validate it's in range 000-999
+    match = re.match(r"^prst(\d{3})\.yml$", filename)
+    if match:
+        number = int(match.group(1))
+        if number < 0 or number > 999:
+            raise InvalidPresetFilenameError(
+                f"Preset filename '{filename}' number must be between 000 and 999"
+            )
