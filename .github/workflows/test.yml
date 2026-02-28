@@ -67,11 +67,10 @@ jobs:
         echo "Skipping tests - only documentation files changed"
     
     - name: Upload test results
-      if: always()
+      if: steps.changes.outputs.code == 'true'
       uses: actions/upload-artifact@v5
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.python-version }}
-        path: |
-          .pytest_cache/
-          htmlcov/
+        path: .pytest_cache/
+        if-no-files-found: ignore
 
