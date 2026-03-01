@@ -36,7 +36,7 @@ def validate_all_subdirs(parent_dir: str):
         for line in output_lines:
             if "Invalid files:" in line:
                 has_errors = True
-            elif has_errors and ".yml:" in line:
+            elif has_errors and (".yml:" in line or ".yaml:" in line):
                 error_lines.append(line.strip())
             elif "Validation complete:" in line:
                 try:
@@ -68,7 +68,7 @@ def validate_all_subdirs(parent_dir: str):
             print(f"\n  {dir_name}:")
             # Extract just the error lines
             for line in output.split("\n"):
-                if "Invalid files:" in line or ".yml:" in line:
+                if "Invalid files:" in line or ".yml:" in line or ".yaml:" in line:
                     print(f"    {line.strip()}")
 
 

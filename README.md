@@ -52,6 +52,13 @@ pip install -e .              # editable install (includes a8-validate CLI)
 
 Alternatively, `pip install -r requirements.txt` still works for running `python validate_directory.py`.
 
+**Before committing:** install pre-commit so lint/format run automatically and CI stays green:
+
+```bash
+pip install pre-commit   # or use venv/bin/pre-commit
+pre-commit install
+```
+
 ---
 
 ### How to use

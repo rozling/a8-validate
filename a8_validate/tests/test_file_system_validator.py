@@ -311,13 +311,16 @@ class TestFileSystemValidator:
 
     def test_valid_preset_filename(self):
         """Test validation of valid preset filenames."""
-        # Test valid filenames
+        # Test valid filenames (.yml and .yaml)
         valid_filenames = [
             "prst000.yml",
             "prst001.yml",
             "prst042.yml",
             "prst123.yml",
             "prst999.yml",
+            "prst000.yaml",
+            "prst001.yaml",
+            "prst999.yaml",
         ]
 
         for filename in valid_filenames:
@@ -345,6 +348,7 @@ class TestFileSystemValidator:
             "prst1.yml",  # Missing digits
             "prst01.yml",  # Only 2 digits
             "prst001.txt",  # Wrong extension
+            "prst001.YAML",  # Wrong case
             "prst001",  # No extension
             "prst1000.yml",  # Too many digits
             "prstabc.yml",  # Non-numeric

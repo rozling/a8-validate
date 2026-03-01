@@ -2,7 +2,7 @@
 """
 Assimil8or Preset Directory Validator
 
-This script validates all Assimil8or preset files (.yml) in a specified directory.
+This script validates Assimil8or preset files (.yml and .yaml) in a specified directory.
 """
 
 import argparse
@@ -37,37 +37,55 @@ def _line_for_path(
     return None
 
 
-def find_yml_files(directory: str) -> List[Path]:
+def _should_ignore_preset_file(name: str) -> bool:
+    """Return True if this preset filename should be ignored (system files)."""
+    ignore_names = {
+        "folderprefs.yml",
+        "lastfolder.yml",
+        "lastpreset.yml",
+        "folderprefs.yaml",
+        "lastfolder.yaml",
+        "lastpreset.yaml",
+    }
+    if name in ignore_names:
+        return True
+    if name.startswith("midi") and (name.endswith(".yml") or name.endswith(".yaml")):
+        return True
+    if name.startswith("._"):
+        return True
+    return False
+
+
+def find_yml_files(directory: str, recursive: bool = False) -> List[Path]:
     """
-    Find all .yml files in the specified directory, excluding system files.
+    Find all preset files (.yml and .yaml) in the specified directory, excluding system files.
 
     Ignores:
-    - folderprefs.yml
-    - lastfolder.yml
-    - lastpreset.yml
-    - midi*.yml
+    - folderprefs.yml / folderprefs.yaml
+    - lastfolder.yml / lastfolder.yaml
+    - lastpreset.yml / lastpreset.yaml
+    - midi*.yml / midi*.yaml
     - ._* (hidden files)
+
+    Args:
+        directory: Directory to search.
+        recursive: If True, search subdirectories as well; each preset is validated
+            with its containing directory as the sample root.
+
+    Returns:
+        Sorted list of paths to preset files.
     """
     dir_path = Path(directory)
     if not dir_path.exists() or not dir_path.is_dir():
         raise ValueError(f"Directory not found: {directory}")
 
-    # Get all .yml files
-    all_yml_files = list(dir_path.glob("*.yml"))
+    if recursive:
+        all_files = list(dir_path.rglob("*.yml")) + list(dir_path.rglob("*.yaml"))
+    else:
+        all_files = list(dir_path.glob("*.yml")) + list(dir_path.glob("*.yaml"))
 
-    # Define files to ignore
-    ignore_patterns = [
-        "folderprefs.yml",
-        "lastfolder.yml",
-        "lastpreset.yml",
-    ]
-
-    # Filter out ignored files
-    return [
-        f
-        for f in all_yml_files
-        if (f.name not in ignore_patterns and not f.name.startswith("midi") and not f.name.startswith("._"))
-    ]
+    filtered = [f for f in all_files if not _should_ignore_preset_file(f.name)]
+    return sorted(filtered)
 
 
 def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
@@ -126,9 +144,18 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
 
 def main():
     parser = argparse.ArgumentParser(description="Validate Assimil8or preset files in a directory")
-    parser.add_argument("directory", help="Directory containing preset .yml files and samples")
+    parser.add_argument(
+        "directory",
+        help="Directory containing preset .yml/.yaml files and samples",
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
     parser.add_argument("--output", "-o", help="Output file for results (optional)")
+    parser.add_argument(
+        "--recursive",
+        "-r",
+        action="store_true",
+        help="Scan subdirectories recursively; each preset is validated with its folder as the sample root",
+    )
     args = parser.parse_args()
 
     output_file = None
@@ -150,19 +177,22 @@ def main():
         output_print = print
 
     try:
-        yml_files = find_yml_files(args.directory)
-        sample_dir = Path(args.directory)
+        preset_files = find_yml_files(args.directory, recursive=args.recursive)
+        base_dir = Path(args.directory)
 
-        if not yml_files:
-            output_print("No .yml files found in {}".format(args.directory))
+        if not preset_files:
+            output_print("No preset files (.yml or .yaml) found in {}".format(args.directory))
             return
 
-        output_print("Found {} preset files. Starting validation...".format(len(yml_files)))
+        output_print("Found {} preset files. Starting validation...".format(len(preset_files)))
 
         results = []
-        for file_path in yml_files:
+        for file_path in preset_files:
+            # When recursive, use each file's directory as sample root; otherwise use the given directory
+            sample_dir = file_path.parent if args.recursive else base_dir
             if args.verbose:
-                output_print("Validating {}... ".format(file_path.name), end="", flush=True)
+                display_path = file_path.relative_to(base_dir) if args.recursive else file_path.name
+                output_print("Validating {}... ".format(display_path), end="", flush=True)
 
             success, message = validate_preset_file(file_path, sample_dir)
             results.append((file_path, success, message))
@@ -175,7 +205,7 @@ def main():
 
         # Print summary
         valid_count = sum(1 for _, success, _ in results if success)
-        output_print("\nValidation complete: {}/{}  files valid".format(valid_count, len(results)))
+        output_print("\nValidation complete: {}/{} files valid".format(valid_count, len(results)))
 
         # Print details for invalid files
         invalid_files = [(path, msg) for path, success, msg in results if not success]
