@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Fixed
+- Black formatting in `test_file_system_validator.py`
+
 ### Added
 - Added preset filename validation:
   - Presets must follow the format `prstxxx.yml` where `xxx` is 000-999
