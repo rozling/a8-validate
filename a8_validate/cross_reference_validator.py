@@ -278,22 +278,23 @@ def _validate_loop_settings(channel_data, channel_number, path: ValidationPath =
                     path=path + ("LoopStart",),
                 )
 
-            # Validate LoopLengthIsEnd flag consistency with LoopMode
-            if "LoopLengthIsEnd" in params:
-                is_end = params["LoopLengthIsEnd"]
-                loop_mode = params.get("LoopMode", channel_data.get("LoopMode"))
-
-                if loop_mode == 1 and is_end != 1:
-                    raise LoopConfigurationError(
-                        f"Channel {channel_number}: LoopMode 1 requires LoopLengthIsEnd to be 1",
-                        path=path + ("LoopLengthIsEnd",),
-                    )
-
-                if loop_mode == 2 and is_end != 0:
-                    raise LoopConfigurationError(
-                        f"Channel {channel_number}: LoopMode 2 requires LoopLengthIsEnd to be 0",
-                        path=path + ("LoopLengthIsEnd",),
-                    )
+            # LoopLengthIsEnd: 1 = LoopLength is end position; 0 or missing = LoopLength is length.
+            # When LoopLengthIsEnd=1, LoopLength must be > LoopStart (end after start).
+            if "LoopLengthIsEnd" in params and params["LoopLengthIsEnd"] == 1:
+                loop_start = params.get("LoopStart", 0)
+                loop_length = params.get("LoopLength")
+                if loop_length is not None and loop_start is not None:
+                    try:
+                        start_val = float(loop_start)
+                        length_val = float(loop_length)
+                        if length_val <= start_val:
+                            raise LoopConfigurationError(
+                                f"Channel {channel_number}: LoopLengthIsEnd=1 means LoopLength is end "
+                                f"position; must be > LoopStart ({start_val})",
+                                path=path + ("LoopLength",),
+                            )
+                    except (TypeError, ValueError):
+                        pass
 
 
 def _validate_sample_boundaries(channel_data, channel_number, path: ValidationPath = ()):
