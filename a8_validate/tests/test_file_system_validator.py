@@ -311,4 +311,7 @@ class TestFileSystemValidator:
         for filename in invalid_filenames:
             with pytest.raises(InvalidPresetFilenameError) as exc_info:
                 validate_preset_filename(filename)
-            assert "format" in str(exc_info.value).lower() or "lowercase" in str(exc_info.value).lower()
+            assert (
+                "format" in str(exc_info.value).lower()
+                or "lowercase" in str(exc_info.value).lower()
+            )
