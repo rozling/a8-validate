@@ -19,8 +19,6 @@ updates:
       production-dependencies:
         patterns:
           - "pyyaml"
-          - "click"
-          - "rich"
       dev-dependencies:
         patterns:
           - "pytest*"
