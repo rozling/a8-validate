@@ -15,6 +15,7 @@
 - Applied black formatting across Python source and tests
 - AGENTS.md: Restructured for agents with quick-reference table, file layout, common tasks, troubleshooting, and before-commit checklist
 - CI: Bump GitHub Actions (`actions/cache` v4→v5, `actions/upload-artifact` v5→v6, `dorny/paths-filter` v2→v3)
+- AGENTS.md and .cursorrules: Updated with schema validator mutation semantics (`validate_preset` mutate default and CLI use of `mutate=False`), venv path (venv/ or .venv/) and test count (56), and guidelines for backward-compatible mutation options and validate-vs-normalize flows
 
 ### Fixed
 - Schema validation errors now use the exception’s structured `path` attribute for line lookup in the YAML line map instead of parsing the error message with regex, so line numbers stay correct when messages change (issue #11)

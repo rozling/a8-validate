@@ -10,7 +10,7 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 
 | Task | Command |
 |------|---------|
-| **Run tests** | `venv/bin/pytest -v --tb=short` (52 tests, ~0.1s) |
+| **Run tests** | `venv/bin/pytest -v --tb=short` or `.venv/bin/pytest -v --tb=short` (56 tests, ~0.1s) |
 | **Lint** | `venv/bin/flake8 a8_validate/ scripts/ validate_directory.py --max-line-length=120 --extend-ignore=E203,W503,D` |
 | **Format (check)** | `venv/bin/black --check a8_validate/ scripts/ validate_directory.py` |
 | **Format (apply)** | `venv/bin/black a8_validate/ scripts/ validate_directory.py` |
@@ -26,7 +26,7 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 
 ## Before committing
 
-1. Run tests: `venv/bin/pytest -v --tb=short`
+1. Run tests: `venv/bin/pytest -v --tb=short` or `.venv/bin/pytest -v --tb=short`
 2. Run lint and format: either run **`venv/bin/pre-commit run --all-files`** (or `venv/bin/pre-commit run` on staged files), or rely on the git hook if you’ve run **`venv/bin/pre-commit install`** once—then every commit will run black, isort, and flake8 automatically.
 3. Add a `CHANGELOG.md` entry for any behavior, docs, or tooling change
 
@@ -38,6 +38,8 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 - **PYTHONPATH:** `scripts/generate_preset_ranges.py` requires `PYTHONPATH=/workspace` (or equivalent) to resolve the `a8_validate` package. The main CLI (`validate_directory.py`) does not need this.
 - **Flake8 config:** D-series (docstrings) and black-related deltas are ignored via `extend-ignore` so pre-commit passes.
 - **wave module:** Part of the Python standard library — never add it to `requirements.txt`.
+- **Schema validator mutation:** `validate_preset()` (and thus channel/zone validation) mutates the input dict in place by default. The CLI uses `validate_preset(..., mutate=False)` so directory validation does not modify parsed data. When changing validation or callers, be aware of who owns the dict and whether it should stay unchanged.
+- **Venv path:** The project may use `venv/` or `.venv/`; use whichever exists (e.g. `venv/bin/pytest` or `.venv/bin/pytest`).
 
 ---
 
@@ -56,7 +58,7 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 ## Common agent tasks
 
 - **Validate presets:** Run the CLI on a directory; use `--verbose` and `--output` as needed.
-- **Change validation logic:** Update code in `a8_validate/`, add or adjust tests in `a8_validate/tests/`.
+- **Change validation logic:** Update code in `a8_validate/`, add or adjust tests in `a8_validate/tests/`. If you add or change mutation behavior (e.g. `mutate=False`), test that the original input is unchanged when applicable and that the return value is correct for both modes.
 - **Fix formatting:** Run `black` and `isort` with apply mode (no `--check-only`).
 
 ---
