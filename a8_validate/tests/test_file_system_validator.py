@@ -78,6 +78,49 @@ class TestFileSystemValidator:
             assert "nonexistent.wav" in str(exc_info.value)
             assert "not found" in str(exc_info.value).lower()
 
+    def test_file_system_errors_expose_structured_path(self):
+        """Structured path (preset, channel, zone) is set on errors for line lookup (issue #13)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            preset = {
+                "Preset 1": {
+                    "Name": "Test Preset",
+                    "Channel 2": {"Pitch": 0.00, "Zone 1": {"Sample": "missing.wav"}},
+                }
+            }
+            with pytest.raises(SampleFileNotFoundError) as exc_info:
+                validate_sample_files(preset, temp_dir)
+            e = exc_info.value
+            assert e.path == ("Preset 1", "Channel 2", "Zone 1")
+            assert "Preset 1" in str(e) and "Channel 2" in str(e) and "Zone 1" in str(e)
+
+    def test_sample_position_errors_expose_structured_path_with_param(self, monkeypatch):
+        """Position errors (LoopStart/SampleStart) include param in path for line lookup (issue #13)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            sample_path = os.path.join(temp_dir, "short.wav")
+            with open(sample_path, "wb") as f:
+                wav_header = (
+                    b"RIFF\x24\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00"
+                    b"\x44\xac\x00\x00\x88\x58\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00"
+                )
+                f.write(wav_header)
+            preset = {
+                "Preset 1": {
+                    "Name": "Test",
+                    "Channel 1": {
+                        "Pitch": 0.00,
+                        "Zone 1": {"Sample": "short.wav", "SampleStart": 999999},
+                    },
+                }
+            }
+            monkeypatch.setattr(
+                "a8_validate.file_system_validator.get_sample_length",
+                lambda file_path: 1000,
+            )
+            with pytest.raises(FileSystemValidationError) as exc_info:
+                validate_sample_files(preset, temp_dir)
+            e = exc_info.value
+            assert e.path == ("Preset 1", "Channel 1", "Zone 1", "SampleStart")
+
     def test_invalid_sample_format(self):
         """Test validation of a preset with a non-WAV sample file."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -311,7 +354,4 @@ class TestFileSystemValidator:
         for filename in invalid_filenames:
             with pytest.raises(InvalidPresetFilenameError) as exc_info:
                 validate_preset_filename(filename)
-            assert (
-                "format" in str(exc_info.value).lower()
-                or "lowercase" in str(exc_info.value).lower()
-            )
+            assert "format" in str(exc_info.value).lower() or "lowercase" in str(exc_info.value).lower()

@@ -5,7 +5,7 @@
 - Structured validation path and line numbers for all validators (issue #12):
   - Cross-reference and file-system validators now set a `path` attribute (tuple of YAML keys) on their exceptions, matching the schema validator’s path shape
   - CLI resolves path → line number via the YAML line map for cross-reference and sample file errors, so all validation failures can report “(line N)” when available
-  - File-system validator passes path tuples internally and builds human-readable context only when raising errors
+  - File-system validator passes path tuples internally and builds human-readable context only when raising errors (issue #13)
 
 ### Removed
 - Unused dependencies `click` and `rich` from requirements.txt, pyproject.toml, and dependabot; CLI uses argparse and plain print (issue #9)
@@ -166,4 +166,3 @@
 ### Validation Improvements
 - Added validation to require at least one zone per channel (prevents invalid empty channels)
 - Enhanced error handling in file system validator to properly report WAV file read errors
-
