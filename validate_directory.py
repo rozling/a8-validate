@@ -6,9 +6,10 @@ This script validates Assimil8or preset files (.yml and .yaml) in a specified di
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from a8_validate.cross_reference_validator import CrossReferenceError, validate_relationships
 from a8_validate.file_system_validator import (
@@ -88,9 +89,20 @@ def find_yml_files(directory: str, recursive: bool = False) -> List[Path]:
     return sorted(filtered)
 
 
-def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
+def validate_preset_file(
+    file_path: Path,
+    sample_dir: Optional[Path],
+    run_crossref: bool = True,
+    run_samples: bool = True,
+) -> Tuple[bool, str]:
     """
     Validate a preset file.
+
+    Args:
+        file_path: Path to the preset YAML file.
+        sample_dir: Directory used to resolve sample paths; can be None if run_samples is False.
+        run_crossref: If True, run cross-reference validation.
+        run_samples: If True and sample_dir is set, validate sample files and memory.
 
     Returns:
         Tuple of (success, message)
@@ -111,11 +123,10 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
                 raise SchemaValidationError(f"{e} (line {line_number})", path=getattr(e, "path", None)) from e
             raise
 
-        # Validate cross-references
-        validate_relationships(preset_data)
+        if run_crossref:
+            validate_relationships(preset_data)
 
-        # Validate sample files
-        if sample_dir:
+        if run_samples and sample_dir:
             validate_sample_files(preset_data, str(sample_dir))
 
         return True, "Valid"
@@ -156,7 +167,36 @@ def main():
         action="store_true",
         help="Scan subdirectories recursively; each preset is validated with its folder as the sample root",
     )
+    parser.add_argument(
+        "--samples-dir",
+        metavar="PATH",
+        default=None,
+        help="Resolve sample files from this directory instead of the preset directory",
+    )
+    parser.add_argument(
+        "--schema-only",
+        "--no-samples",
+        dest="schema_only",
+        action="store_true",
+        help="Skip sample file existence/format and memory checks (schema and filename only)",
+    )
+    parser.add_argument(
+        "--no-crossref",
+        action="store_true",
+        help="Skip cross-reference validation (e.g. for quick schema-only checks)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON (results + summary) for CI or batch tooling",
+    )
     args = parser.parse_args()
+
+    if args.samples_dir is not None:
+        sd = Path(args.samples_dir)
+        if not sd.exists() or not sd.is_dir():
+            print("Error: --samples-dir must be an existing directory: {}".format(args.samples_dir), file=sys.stderr)
+            return 1
 
     output_file = None
     if args.output:
@@ -179,41 +219,60 @@ def main():
     try:
         preset_files = find_yml_files(args.directory, recursive=args.recursive)
         base_dir = Path(args.directory)
+        samples_base = Path(args.samples_dir) if args.samples_dir else None
 
         if not preset_files:
             output_print("No preset files (.yml or .yaml) found in {}".format(args.directory))
             return
 
-        output_print("Found {} preset files. Starting validation...".format(len(preset_files)))
+        run_crossref = not args.no_crossref
+        run_samples = not args.schema_only
+
+        if not args.json:
+            output_print("Found {} preset files. Starting validation...".format(len(preset_files)))
 
         results = []
         for file_path in preset_files:
-            # When recursive, use each file's directory as sample root; otherwise use the given directory
-            sample_dir = file_path.parent if args.recursive else base_dir
-            if args.verbose:
+            if samples_base is not None:
+                sample_dir = samples_base
+            else:
+                sample_dir = file_path.parent if args.recursive else base_dir
+            if args.verbose and not args.json:
                 display_path = file_path.relative_to(base_dir) if args.recursive else file_path.name
                 output_print("Validating {}... ".format(display_path), end="", flush=True)
 
-            success, message = validate_preset_file(file_path, sample_dir)
+            success, message = validate_preset_file(
+                file_path, sample_dir, run_crossref=run_crossref, run_samples=run_samples
+            )
             results.append((file_path, success, message))
 
-            if args.verbose:
+            if args.verbose and not args.json:
                 status = "✓ VALID" if success else "✗ INVALID"
                 output_print(status)
                 if not success:
                     output_print("  Error: {}".format(message))
 
-        # Print summary
         valid_count = sum(1 for _, success, _ in results if success)
-        output_print("\nValidation complete: {}/{} files valid".format(valid_count, len(results)))
+        invalid_count = len(results) - valid_count
 
-        # Print details for invalid files
-        invalid_files = [(path, msg) for path, success, msg in results if not success]
-        if invalid_files:
-            output_print("\nInvalid files:")
-            invalid_files.sort(key=lambda x: x[0].name)
-            for path, message in invalid_files:
-                output_print("  {}: {}".format(path.name, message))
+        if args.json:
+            json_results: List[Dict[str, Any]] = [
+                {"file": str(fp), "valid": ok, "message": msg} for fp, ok, msg in results
+            ]
+            payload = {
+                "results": json_results,
+                "summary": {"total": len(results), "valid": valid_count, "invalid": invalid_count},
+            }
+            out = json.dumps(payload, indent=2)
+            output_print(out)
+        else:
+            output_print("\nValidation complete: {}/{} files valid".format(valid_count, len(results)))
+            invalid_files = [(path, msg) for path, success, msg in results if not success]
+            if invalid_files:
+                output_print("\nInvalid files:")
+                invalid_files.sort(key=lambda x: x[0].name)
+                for path, message in invalid_files:
+                    output_print("  {}: {}".format(path.name, message))
 
     except Exception as e:
         output_print("Error: {}".format(e))

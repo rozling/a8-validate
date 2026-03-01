@@ -75,6 +75,11 @@ Useful flags:
 
 - `--output results.txt` – also write run output to a file
 - `--verbose` – log each preset as it is processed
+- `--recursive` / `-r` – scan subdirectories; each preset is validated with its folder as the sample root
+- `--samples-dir PATH` – resolve sample files from this directory instead of the preset directory (decouples preset location from sample location)
+- `--schema-only` – skip sample file existence/format and memory checks (schema and filename only)
+- `--no-crossref` – skip cross-reference validation (e.g. for quick schema-only checks)
+- `--json` – emit machine-readable JSON results (file, valid, message per file; summary with total/valid/invalid) for CI or batch tooling
 - `--help` – list all CLI options
 
 The script scans for `.yml` presets (system files are skipped), validates schema + cross references, and checks every referenced sample. Successful run:
