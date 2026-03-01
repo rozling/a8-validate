@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Changed
+- CI: Bump GitHub Actions (`actions/cache` v4→v5, `actions/upload-artifact` v5→v6, `dorny/paths-filter` v2→v3)
+
 ### Fixed
 - Black formatting in `test_file_system_validator.py`
 
