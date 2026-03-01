@@ -88,7 +88,11 @@ CHANNEL_SCHEMA = {
     "AttackMod": {"type": "cv_input_with_amount", "required": False},
     "ReleaseMod": {"type": "cv_input_with_amount", "required": False},
     "ZonesCV": {"type": "cv_input", "required": False},
-    "ZonesRT": {"type": "integer", "required": False, "values": [0, 1]},
+    "ZonesRT": {
+        "type": "integer",
+        "required": False,
+        "values": [0, 1, 2, 3],
+    },  # 0=Gate Rise, 1=Continuous, 2=Advance, 3=Random
     "XfadeGroup": {"type": "string", "required": False, "values": ["A", "B", "C", "D"]},
 }
 
