@@ -7,6 +7,7 @@ from a8_validate.schema_validator import (
     InvalidParameterError,
     InvalidValueError,
     MissingRequiredParameterError,
+    SchemaValidationError,
     validate_channel,
     validate_preset,
     validate_zone,
@@ -213,6 +214,41 @@ class TestSchemaValidator:
 
         # Validation should succeed without raising any exceptions
         validate_channel(valid_channel, channel_number=1)
+
+    def test_link_channel_with_no_zones_allowed(self):
+        """Link (ChannelMode 1) channels reference another channel's zones and may have none."""
+        link_channel = {"ChannelMode": 1, "PitchCV": "1A 0.50"}
+        validate_channel(link_channel, channel_number=2)
+
+        preset = {
+            "Preset 1": {
+                "Name": "Link Test",
+                "Channel 1": {"Zone 1": {"Sample": "kick.wav"}},
+                "Channel 2": link_channel,
+            }
+        }
+        validate_preset(preset)
+
+    def test_cycle_channel_with_no_zones_allowed(self):
+        """Cycle (ChannelMode 2) channels reference another channel's zones and may have none."""
+        cycle_channel = {"ChannelMode": 2, "PitchCV": "2A 0.50"}
+        validate_channel(cycle_channel, channel_number=2)
+
+        preset = {
+            "Preset 1": {
+                "Name": "Cycle Test",
+                "Channel 1": {"Zone 1": {"Sample": "kick.wav"}},
+                "Channel 2": cycle_channel,
+            }
+        }
+        validate_preset(preset)
+
+    def test_master_channel_with_no_zones_rejected(self):
+        """Master (ChannelMode 0 or default) channels must have at least one zone."""
+        channel_no_zones = {"Pitch": 0.0, "PitchCV": "1A 0.50"}
+        with pytest.raises(SchemaValidationError) as exc_info:
+            validate_channel(channel_no_zones, channel_number=1)
+        assert "at least one zone" in str(exc_info.value)
 
     def test_invalid_channel_mode(self):
         """Test validation of an invalid channel mode value."""

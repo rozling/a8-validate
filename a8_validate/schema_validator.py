@@ -269,9 +269,12 @@ def validate_channel(channel_data, channel_number, path=()):
         except (IndexError, ValueError):
             raise InvalidParameterError(f"Invalid zone key format: {k}", path=path + (k,))
 
-    # Require at least one zone per channel
+    # Require at least one zone per channel, except Link (1) and Cycle (2) modes
+    # which reference another channel's zones and do not need their own
     if len(zone_numbers) == 0:
-        raise SchemaValidationError(f"Channel {channel_number} must have at least one zone", path=path)
+        channel_mode = channel_data.get("ChannelMode", 0)
+        if channel_mode not in (1, 2):
+            raise SchemaValidationError(f"Channel {channel_number} must have at least one zone", path=path)
 
     if len(zone_numbers) > 8:
         raise SchemaValidationError(
