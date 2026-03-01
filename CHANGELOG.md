@@ -1,6 +1,8 @@
 ## [Unreleased]
 
 ### Added
+- Support for `.yaml` preset files: discovery globs both `*.yml` and `*.yaml`, and filename validation accepts `prstxxx.yaml` (issue #15)
+- CLI flag `--recursive` / `-r` to scan subdirectories; each preset is validated with its containing directory as the sample root (issue #15)
 - `validate_preset(..., mutate=False)` to validate without modifying the input: returns a normalized copy and leaves the original dict unchanged; default `mutate=True` preserves previous in-place behavior (issue #14)
 - pyproject.toml: project metadata, dependencies, optional dev extras, and `a8-validate` console script entrypoint (issue #8)
 - Structured validation path and line numbers for all validators (issue #12):

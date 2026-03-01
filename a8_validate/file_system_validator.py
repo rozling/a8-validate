@@ -332,11 +332,11 @@ def validate_preset_filename(filename):
     """
     Validate that a preset filename follows the required format.
 
-    Presets must follow the format prstxxx.yml where xxx is 000-999.
+    Presets must follow the format prstxxx.yml or prstxxx.yaml where xxx is 000-999.
     The filename must be lowercase.
 
     Args:
-        filename: The filename to validate (e.g., "prst001.yml")
+        filename: The filename to validate (e.g., "prst001.yml" or "prst001.yaml")
 
     Raises:
         InvalidPresetFilenameError: If the filename does not match the required format
@@ -347,15 +347,16 @@ def validate_preset_filename(filename):
             f"Preset filename '{filename}' must be lowercase (expected: '{filename.lower()}')"
         )
 
-    # Check if filename matches the pattern prstxxx.yml where xxx is 000-999
-    pattern = r"^prst\d{3}\.yml$"
+    # Check if filename matches the pattern prstxxx.yml or prstxxx.yaml where xxx is 000-999
+    pattern = r"^prst\d{3}\.(?:yml|yaml)$"
     if not re.match(pattern, filename):
         raise InvalidPresetFilenameError(
-            f"Preset filename '{filename}' does not match required format 'prstxxx.yml' " f"(where xxx is 000-999)"
+            f"Preset filename '{filename}' does not match required format 'prstxxx.yml' or 'prstxxx.yaml' "
+            f"(where xxx is 000-999)"
         )
 
     # Extract the number part and validate it's in range 000-999
-    match = re.match(r"^prst(\d{3})\.yml$", filename)
+    match = re.match(r"^prst(\d{3})\.(?:yml|yaml)$", filename)
     if match:
         number = int(match.group(1))
         if number < 0 or number > 999:
