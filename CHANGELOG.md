@@ -1,40 +1,40 @@
 ## [Unreleased]
 
+## [1.1.0] – 2026-03-01
+
+This release addresses **issues #8 through #17** from the backlog.
+
+### Issues addressed
+
+- **#8** – Support `.yaml` extension and optional recursive scan: glob both `*.yml` and `*.yaml`; add `--recursive` / `-r` to scan subdirectories from the CLI. Also added `pyproject.toml` and `a8-validate` console script entrypoint (installable package).
+- **#9** – Add CLI options: `--samples-dir`, `--schema-only` (alias `--no-samples`), `--no-crossref`, `--json` output. Remove unused `click` and `rich` dependencies (CLI uses argparse).
+- **#10** – Open `--output` file with UTF-8 encoding so preset names or paths with non-ASCII characters are written correctly.
+- **#11** – Use structured `path` on schema errors for line lookup in the YAML line map instead of regex on the message; verify and pin GitHub Action versions in workflows.
+- **#12** – Standardize structured paths and line numbers: cross-reference and file-system validators set a `path` attribute on exceptions; CLI resolves path → line number for all validation failures.
+- **#13** – Pass structured identifiers in file_system_validator (path tuples internally); build human-readable context only when raising errors.
+- **#14** – Optional validate-without-mutation: `validate_preset(..., mutate=False)` returns a normalized copy and leaves the input unchanged; default `mutate=True` unchanged.
+- **#15** – Support `.yaml` preset files and `--recursive` (see #8); preset filename validation accepts `prstxxx.yaml`, format `prst000`–`prst999`, lowercase.
+- **#16** – CLI options for scriptability: `--samples-dir`, `--schema-only`, `--no-crossref`, `--json` (see #9).
+- **#17** – UTF-8 for `--output` (see #10).
+
 ### Added
-- CLI options for flexibility and scriptability (issue #16):
-  - `--samples-dir PATH` – validate presets in one directory but resolve sample files from another
-  - `--schema-only` (alias `--no-samples`) – skip sample file existence/format and memory checks
-  - `--no-crossref` – skip cross-reference validation for quick schema-only checks
-  - `--json` – emit machine-readable results (results list + summary) for CI or batch tooling
-- Support for `.yaml` preset files: discovery globs both `*.yml` and `*.yaml`, and filename validation accepts `prstxxx.yaml` (issue #15)
-- CLI flag `--recursive` / `-r` to scan subdirectories; each preset is validated with its containing directory as the sample root (issue #15)
-- `validate_preset(..., mutate=False)` to validate without modifying the input: returns a normalized copy and leaves the original dict unchanged; default `mutate=True` preserves previous in-place behavior (issue #14)
-- pyproject.toml: project metadata, dependencies, optional dev extras, and `a8-validate` console script entrypoint (issue #8)
-- Structured validation path and line numbers for all validators (issue #12):
-  - Cross-reference and file-system validators now set a `path` attribute (tuple of YAML keys) on their exceptions, matching the schema validator’s path shape
-  - CLI resolves path → line number via the YAML line map for cross-reference and sample file errors, so all validation failures can report “(line N)” when available
-  - File-system validator passes path tuples internally and builds human-readable context only when raising errors (issue #13)
+
+- CLI options: `--samples-dir`, `--schema-only` / `--no-samples`, `--no-crossref`, `--json`.
+- Support for `.yaml` preset files and `--recursive` / `-r`; preset filename validation (`prstxxx.yml`/`.yaml`, 000–999, lowercase).
+- `validate_preset(..., mutate=False)`; pyproject.toml and `a8-validate` console script.
+- Structured validation path and line numbers for all validators; file-system validator uses path tuples internally.
 
 ### Removed
-- Unused dependencies `click` and `rich` from requirements.txt, pyproject.toml, and dependabot; CLI uses argparse and plain print (issue #9)
+
+- Unused dependencies `click` and `rich`.
 
 ### Changed
-- **Lint/format single source of truth:** black and isort config moved to `pyproject.toml`; CI Lint workflow now runs `pre-commit run --all-files` so CI uses the exact same hooks and versions as local (no more drift). CONTRIBUTING and README stress installing `pre-commit install` to avoid CI lint failures.
-- Applied black formatting across Python source and tests
-- AGENTS.md: Restructured for agents with quick-reference table, file layout, common tasks, troubleshooting, and before-commit checklist
-- CI: Bump GitHub Actions (`actions/cache` v4→v5, `actions/upload-artifact` v5→v6, `dorny/paths-filter` v2→v3)
-- AGENTS.md and .cursorrules: Updated with schema validator mutation semantics (`validate_preset` mutate default and CLI use of `mutate=False`), venv path (venv/ or .venv/) and test count (56), and guidelines for backward-compatible mutation options and validate-vs-normalize flows
+
+- Lint/format config in `pyproject.toml`; CI runs `pre-commit run --all-files`. Bumped GitHub Actions (cache, upload-artifact, paths-filter). AGENTS.md and docs updated.
 
 ### Fixed
-- Schema validation errors now use the exception’s structured `path` attribute for line lookup in the YAML line map instead of parsing the error message with regex, so line numbers stay correct when messages change (issue #11)
-- Open `--output` file with UTF-8 encoding so preset names or paths with non-ASCII characters are written correctly (issues #10, #17)
-- Black formatting in `test_file_system_validator.py`
 
-### Added
-- Added preset filename validation:
-  - Presets must follow the format `prstxxx.yml` where `xxx` is 000-999
-  - Filenames must be lowercase
-  - Invalid filenames will cause validation to fail with a clear error message
+- Schema errors use exception `path` for line lookup (no regex on message). `--output` opened with UTF-8.
 
 ## 23 November 2025
 

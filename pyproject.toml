@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "a8-validate"
-version = "0.1.0"
+version = "1.1.0"
 description = "Assimil8or preset YAML validator — schema compliance, cross-references, WAV checks"
 readme = "README.md"
 license = { text = "MIT" }
