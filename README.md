@@ -46,8 +46,11 @@ cd a8-validate
 
 python3 -m venv venv          # or reuse your preferred venv location
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e .              # editable install (includes a8-validate CLI)
+# or: pip install -e ".[dev]"  # with dev dependencies for testing/linting
 ```
+
+Alternatively, `pip install -r requirements.txt` still works for running `python validate_directory.py`.
 
 ---
 
@@ -56,8 +59,10 @@ pip install -r requirements.txt
 Validate a Preset Folder:
 
 ```bash
-python validate_directory.py /path/to/presets --verbose
+a8-validate /path/to/presets --verbose
 ```
+
+Or with the script directly: `python validate_directory.py /path/to/presets --verbose`
 
 Useful flags:
 

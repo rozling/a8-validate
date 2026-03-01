@@ -81,7 +81,9 @@ if __name__ == "__main__":
     min_preset["Channel 1"]["Zone 1"] = min_zone
 
     with open("preset_min_values.yml", "w") as f:
-        yaml.dump({"Preset 1": min_preset}, f, default_flow_style=False, sort_keys=False)
+        yaml.dump(
+            {"Preset 1": min_preset}, f, default_flow_style=False, sort_keys=False
+        )
 
     print("Generated preset_min_values.yml")
 
@@ -94,6 +96,8 @@ if __name__ == "__main__":
     max_preset["Channel 1"]["Zone 1"] = max_zone
 
     with open("preset_max_values.yml", "w") as f:
-        yaml.dump({"Preset 1": max_preset}, f, default_flow_style=False, sort_keys=False)
+        yaml.dump(
+            {"Preset 1": max_preset}, f, default_flow_style=False, sort_keys=False
+        )
 
     print("Generated preset_max_values.yml")

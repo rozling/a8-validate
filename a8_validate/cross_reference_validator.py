@@ -116,7 +116,9 @@ def _validate_crossfade_groups(preset, channels):
             # Check that the corresponding CV input exists
             cv_param = f"Xfade{group}CV"
             if cv_param not in preset:
-                raise CrossReferenceError(f"{cv_param} is required for XfadeGroup {group}")
+                raise CrossReferenceError(
+                    f"{cv_param} is required for XfadeGroup {group}"
+                )
 
 
 def _validate_channel_modes(channels):
@@ -164,12 +166,19 @@ def _validate_cv_inputs(preset):
     """
     # Check all CV input references in the preset
     for key, value in preset.items():
-        if any(key.startswith(prefix) for prefix in ["XfadeACV", "XfadeBCV", "XfadeCCV", "XfadeDCV", "Data2asCV"]):
+        if any(
+            key.startswith(prefix)
+            for prefix in ["XfadeACV", "XfadeBCV", "XfadeCCV", "XfadeDCV", "Data2asCV"]
+        ):
             if not isinstance(value, str):
-                raise CVInputReferenceError(f"{key} must be a string, got {type(value).__name__}")
+                raise CVInputReferenceError(
+                    f"{key} must be a string, got {type(value).__name__}"
+                )
 
             if not re.match(CV_INPUT_PATTERN, value):
-                raise CVInputReferenceError(f"{key} must be in format '1A'-'8C' or 'Off', got {value}")
+                raise CVInputReferenceError(
+                    f"{key} must be in format '1A'-'8C' or 'Off', got {value}"
+                )
 
 
 def _validate_channel_relationships(channel_data, channel_number):
@@ -201,7 +210,9 @@ def _validate_channel_relationships(channel_data, channel_number):
 
     # Validate each zone's internal relationships
     for zone_number, zone_data in zones.items():
-        _validate_zone_relationships(zone_data, channel_data, channel_number, zone_number)
+        _validate_zone_relationships(
+            zone_data, channel_data, channel_number, zone_number
+        )
 
 
 def _validate_loop_settings(channel_data, channel_number):
@@ -241,7 +252,9 @@ def _validate_loop_settings(channel_data, channel_number):
             # LoopLength can be defined alone (LoopStart defaults to 0)
             # But if LoopStart is defined, LoopLength must also be defined
             if "LoopStart" in params and "LoopLength" not in params:
-                raise LoopConfigurationError(f"Channel {channel_number}: LoopStart requires LoopLength to be defined")
+                raise LoopConfigurationError(
+                    f"Channel {channel_number}: LoopStart requires LoopLength to be defined"
+                )
 
             # Validate LoopLengthIsEnd flag consistency with LoopMode
             if "LoopLengthIsEnd" in params:

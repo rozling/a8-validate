@@ -13,7 +13,9 @@ def validate_all_subdirs(parent_dir: str):
         print(f"Error: Directory not found: {parent_dir}")
         return
 
-    subdirs = [d for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
+    subdirs = [
+        d for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith(".")
+    ]
 
     total_valid = 0
     total_invalid = 0
@@ -54,7 +56,9 @@ def validate_all_subdirs(parent_dir: str):
                     pass
 
         if has_errors or result.returncode != 0:
-            invalid_dirs.append((subdir.name, "\n".join(error_lines) if error_lines else result.stdout))
+            invalid_dirs.append(
+                (subdir.name, "\n".join(error_lines) if error_lines else result.stdout)
+            )
             total_invalid += 1
 
     print(f"\n{'='*60}")
