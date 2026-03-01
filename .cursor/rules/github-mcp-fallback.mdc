@@ -1,0 +1,19 @@
+---
+description: When GitHub MCP fails, fall back to gh CLI
+alwaysApply: true
+---
+
+# GitHub MCP fallback
+
+When a **GitHub MCP** action fails (e.g. `issue_read`, `create_pull_request` returns an error, 422, or "refs not readable"):
+
+1. **Retry the operation using the `gh` CLI** instead of giving up or only suggesting manual steps.
+2. **Tell the user** that the MCP call failed and that the gh CLI was used (or suggest they run the gh command if gh is not available).
+
+Common equivalents:
+
+- **Read issue:** `gh issue view <N> --repo <owner>/<repo>`
+- **Create PR:** `gh pr create --base main --head <branch> --title "..." --body "..."`
+- **List PRs:** `gh pr list`
+
+If using `gh`, ensure it is authenticated (`gh auth status`). If `gh` is not installed or auth fails, report that and give the user the manual URL or command to run.
