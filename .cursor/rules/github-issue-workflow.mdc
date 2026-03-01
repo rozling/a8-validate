@@ -15,7 +15,7 @@ When the user asks to fix or implement "issue N" (e.g. "fix issue 16"):
    Create and switch to a branch before implementing, e.g. `fix/issue-<N>-<short-slug>` (e.g. `fix/issue-16-cli-options`). Base off current branch or `main` as appropriate.
 
 3. **Implement and document**
-   Follow the issue title/body. Add or update tests. Add a CHANGELOG.md entry for behavior or CLI changes. Run tests and pre-commit before committing.
+   Follow the issue title/body. Add or update tests. Run tests and pre-commit before committing.
 
 4. **PR**
    When creating the pull request, reference the issue in the title or body (e.g. "fixes #16" or "Closes #16") so GitHub links and can auto-close the issue.

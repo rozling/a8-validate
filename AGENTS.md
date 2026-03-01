@@ -8,27 +8,28 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 
 ## Quick reference
 
+This project uses **`.venv`** (use `venv/` only if that is what exists in your clone).
+
 | Task | Command |
 |------|---------|
-| **Run tests** | `venv/bin/pytest -v --tb=short` or `.venv/bin/pytest -v --tb=short` (56 tests, ~0.1s) |
-| **Lint** | `venv/bin/flake8 a8_validate/ scripts/ validate_directory.py --max-line-length=120 --extend-ignore=E203,W503,D` |
-| **Format (check)** | `venv/bin/black --check a8_validate/ scripts/ validate_directory.py` |
-| **Format (apply)** | `venv/bin/black a8_validate/ scripts/ validate_directory.py` |
-| **Imports (check)** | `venv/bin/isort --check-only a8_validate/ scripts/ validate_directory.py` |
-| **Imports (apply)** | `venv/bin/isort a8_validate/ scripts/ validate_directory.py` |
-| **Pre-commit (run)** | `venv/bin/pre-commit run --all-files` |
-| **Pre-commit (install hooks)** | `venv/bin/pre-commit install` (then every commit runs black, isort, flake8) |
-| **Run CLI** | `venv/bin/a8-validate <directory> --verbose` or `venv/bin/python validate_directory.py <directory> --verbose` |
-| **Validate subdirs** | `venv/bin/python scripts/validate_all_subdirs.py <directory>` |
-| **Generate ranges** | `PYTHONPATH=/workspace venv/bin/python scripts/generate_preset_ranges.py` |
+| **Run tests** | `.venv/bin/pytest -v --tb=short` (69 tests, ~0.1s) |
+| **Lint** | `.venv/bin/flake8 a8_validate/ scripts/ validate_directory.py --max-line-length=120 --extend-ignore=E203,W503,D` |
+| **Format (check)** | `.venv/bin/black --check a8_validate/ scripts/ validate_directory.py` |
+| **Format (apply)** | `.venv/bin/black a8_validate/ scripts/ validate_directory.py` |
+| **Imports (check)** | `.venv/bin/isort --check-only a8_validate/ scripts/ validate_directory.py` |
+| **Imports (apply)** | `.venv/bin/isort a8_validate/ scripts/ validate_directory.py` |
+| **Pre-commit (run)** | `.venv/bin/pre-commit run --all-files` |
+| **Pre-commit (install hooks)** | `.venv/bin/pre-commit install` (then every commit runs black, isort, flake8) |
+| **Run CLI** | `.venv/bin/a8-validate <directory> --verbose` or `.venv/bin/python validate_directory.py <directory> --verbose` |
+| **Validate subdirs** | `.venv/bin/python scripts/validate_all_subdirs.py <directory>` |
+| **Generate ranges** | `PYTHONPATH=/workspace .venv/bin/python scripts/generate_preset_ranges.py` |
 
 ---
 
 ## Before committing
 
-1. Run tests: `venv/bin/pytest -v --tb=short` or `.venv/bin/pytest -v --tb=short`
-2. Run lint and format: either run **`venv/bin/pre-commit run --all-files`** (or `venv/bin/pre-commit run` on staged files), or rely on the git hook if you’ve run **`venv/bin/pre-commit install`** once—then every commit will run black, isort, and flake8 automatically.
-3. Add a `CHANGELOG.md` entry for any behavior, docs, or tooling change
+1. Run tests: `.venv/bin/pytest -v --tb=short`
+2. Run lint and format: either run **`.venv/bin/pre-commit run --all-files`** (or on staged files), or rely on the git hook if you’ve run **`.venv/bin/pre-commit install`** once—then every commit will run black, isort, and flake8 automatically.
 
 ---
 
@@ -39,7 +40,7 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 - **Flake8 config:** D-series (docstrings) and black-related deltas are ignored via `extend-ignore` so pre-commit passes.
 - **wave module:** Part of the Python standard library — never add it to `requirements.txt`.
 - **Schema validator mutation:** `validate_preset()` (and thus channel/zone validation) mutates the input dict in place by default. The CLI uses `validate_preset(..., mutate=False)` so directory validation does not modify parsed data. When changing validation or callers, be aware of who owns the dict and whether it should stay unchanged.
-- **Venv path:** The project may use `venv/` or `.venv/`; use whichever exists (e.g. `venv/bin/pytest` or `.venv/bin/pytest`).
+- **Venv path:** This repo uses `.venv/`; use `.venv/bin/...` for pytest, pre-commit, etc. (Some clones may use `venv/`; use whichever exists.)
 
 ---
 
@@ -59,7 +60,7 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 
 - **Validate presets:** Run the CLI on a directory; use `--verbose` and `--output` as needed.
 - **Change validation logic:** Update code in `a8_validate/`, add or adjust tests in `a8_validate/tests/`. If you add or change mutation behavior (e.g. `mutate=False`), test that the original input is unchanged when applicable and that the return value is correct for both modes.
-- **Implement a GitHub issue:** Use the GitHub MCP `issue_read` (owner/repo from `git remote -v`) to get the issue body before implementing. Create a dedicated branch `fix/issue-<N>-<slug>` first. Add a CHANGELOG.md entry; in the PR, use "fixes #N" so the issue is linked and closed on merge.
+- **Implement a GitHub issue:** Use the GitHub MCP `issue_read` (owner/repo from `git remote -v`) to get the issue body before implementing. Create a dedicated branch `fix/issue-<N>-<slug>` first. In the PR, use "fixes #N" so the issue is linked and closed on merge.
 - **Fix formatting:** Run `black` and `isort` with apply mode (no `--check-only`).
 
 ---

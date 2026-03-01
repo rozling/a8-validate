@@ -200,6 +200,7 @@ def main():
 
     output_file = None
     if args.output:
+        # UTF-8 for preset names/paths with non-ASCII (issue #17)
         output_file = open(args.output, "w", encoding="utf-8")
 
         def output_print(*args, **kwargs):
