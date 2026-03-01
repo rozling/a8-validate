@@ -1,12 +1,18 @@
 """Cross-reference validator module for Assimil8or preset files."""
 
 import re
+from typing import Optional, Tuple
+
+# Path shape: (preset_key, channel_key?, zone_key?, param?) — tuple of YAML keys for line_map lookup
+ValidationPath = Tuple[str, ...]
 
 
 class CrossReferenceError(Exception):
     """Base exception for cross-reference validation errors."""
 
-    pass
+    def __init__(self, message: str, path: Optional[ValidationPath] = None):
+        super().__init__(message)
+        self.path = path
 
 
 class ChannelModeError(CrossReferenceError):
@@ -48,15 +54,16 @@ def validate_relationships(preset_data):
         CrossReferenceError: If validation fails
     """
     for preset_key, preset_value in preset_data.items():
-        _validate_preset_relationships(preset_value)
+        _validate_preset_relationships(preset_value, path=(preset_key,))
 
 
-def _validate_preset_relationships(preset):
+def _validate_preset_relationships(preset, path: ValidationPath = ()):
     """
     Validate relationships within a preset.
 
     Args:
         preset: Dictionary containing the preset data
+        path: Tuple of YAML keys (e.g. (preset_key,)) for error reporting
 
     Raises:
         CrossReferenceError: If validation fails
@@ -69,26 +76,30 @@ def _validate_preset_relationships(preset):
             channels[channel_number] = value
 
     # Validate crossfade groups
-    _validate_crossfade_groups(preset, channels)
+    _validate_crossfade_groups(preset, channels, path)
 
     # Validate channel modes
-    _validate_channel_modes(channels)
+    _validate_channel_modes(channels, path)
 
     # Validate CV inputs
-    _validate_cv_inputs(preset)
+    _validate_cv_inputs(preset, path)
 
     # Validate each channel's internal relationships
     for channel_number, channel_data in channels.items():
-        _validate_channel_relationships(channel_data, channel_number)
+        channel_key = f"Channel {channel_number}"
+        _validate_channel_relationships(
+            channel_data, channel_number, path=path + (channel_key,)
+        )
 
 
-def _validate_crossfade_groups(preset, channels):
+def _validate_crossfade_groups(preset, channels, path: ValidationPath = ()):
     """
     Validate crossfade group configurations.
 
     Args:
         preset: Dictionary containing the preset data
         channels: Dictionary of channel numbers to channel data
+        path: Tuple of YAML keys for error reporting
 
     Raises:
         CrossReferenceError: If validation fails
@@ -110,23 +121,26 @@ def _validate_crossfade_groups(preset, channels):
             if len(channel_numbers) < 2:
                 raise CrossReferenceError(
                     f"Crossfade Group {group} with XfadeGroup parameter must have at least 2 channels, "
-                    f"but only has {len(channel_numbers)}"
+                    f"but only has {len(channel_numbers)}",
+                    path=path,
                 )
 
             # Check that the corresponding CV input exists
             cv_param = f"Xfade{group}CV"
             if cv_param not in preset:
                 raise CrossReferenceError(
-                    f"{cv_param} is required for XfadeGroup {group}"
+                    f"{cv_param} is required for XfadeGroup {group}",
+                    path=path + (cv_param,),
                 )
 
 
-def _validate_channel_modes(channels):
+def _validate_channel_modes(channels, path: ValidationPath = ()):
     """
     Validate channel mode configurations.
 
     Args:
         channels: Dictionary of channel numbers to channel data
+        path: Tuple of YAML keys (preset only) for building full path
 
     Raises:
         ChannelModeError: If validation fails
@@ -149,17 +163,20 @@ def _validate_channel_modes(channels):
 
                 if not has_master_above:
                     mode_name = "Link" if mode == 1 else "Cycle"
+                    channel_key = f"Channel {channel_number}"
                     raise ChannelModeError(
-                        f"Channel {channel_number} is in {mode_name} mode but has no Master channel above it"
+                        f"Channel {channel_number} is in {mode_name} mode but has no Master channel above it",
+                        path=path + (channel_key, "ChannelMode"),
                     )
 
 
-def _validate_cv_inputs(preset):
+def _validate_cv_inputs(preset, path: ValidationPath = ()):
     """
     Validate CV input references.
 
     Args:
         preset: Dictionary containing the preset data
+        path: Tuple of YAML keys (preset only) for building full path
 
     Raises:
         CVInputReferenceError: If validation fails
@@ -172,31 +189,34 @@ def _validate_cv_inputs(preset):
         ):
             if not isinstance(value, str):
                 raise CVInputReferenceError(
-                    f"{key} must be a string, got {type(value).__name__}"
+                    f"{key} must be a string, got {type(value).__name__}",
+                    path=path + (key,),
                 )
 
             if not re.match(CV_INPUT_PATTERN, value):
                 raise CVInputReferenceError(
-                    f"{key} must be in format '1A'-'8C' or 'Off', got {value}"
+                    f"{key} must be in format '1A'-'8C' or 'Off', got {value}",
+                    path=path + (key,),
                 )
 
 
-def _validate_channel_relationships(channel_data, channel_number):
+def _validate_channel_relationships(channel_data, channel_number, path: ValidationPath = ()):
     """
     Validate relationships within a channel.
 
     Args:
         channel_data: Dictionary containing the channel data
         channel_number: Channel number
+        path: Tuple of YAML keys (e.g. (preset_key, channel_key)) for error reporting
 
     Raises:
         CrossReferenceError: If validation fails
     """
     # Validate loop settings
-    _validate_loop_settings(channel_data, channel_number)
+    _validate_loop_settings(channel_data, channel_number, path)
 
     # Validate sample start/end
-    _validate_sample_boundaries(channel_data, channel_number)
+    _validate_sample_boundaries(channel_data, channel_number, path)
 
     # Collect all zones
     zones = {}
@@ -206,16 +226,18 @@ def _validate_channel_relationships(channel_data, channel_number):
             zones[zone_number] = value
 
     # Validate zone voltage ranges
-    _validate_zone_voltage_ranges(zones, channel_number)
+    _validate_zone_voltage_ranges(zones, channel_number, path)
 
     # Validate each zone's internal relationships
     for zone_number, zone_data in zones.items():
+        zone_key = f"Zone {zone_number}"
         _validate_zone_relationships(
-            zone_data, channel_data, channel_number, zone_number
+            zone_data, channel_data, channel_number, zone_number,
+            path=path + (zone_key,),
         )
 
 
-def _validate_loop_settings(channel_data, channel_number):
+def _validate_loop_settings(channel_data, channel_number, path: ValidationPath = ()):
     """
     Validate loop settings in a channel with parameter inheritance support.
 
@@ -233,6 +255,7 @@ def _validate_loop_settings(channel_data, channel_number):
     Args:
         channel_data: Dictionary containing the channel data
         channel_number: Channel number
+        path: Tuple of YAML keys for error reporting
 
     Raises:
         LoopConfigurationError: If loop parameters are inconsistently defined
@@ -253,7 +276,8 @@ def _validate_loop_settings(channel_data, channel_number):
             # But if LoopStart is defined, LoopLength must also be defined
             if "LoopStart" in params and "LoopLength" not in params:
                 raise LoopConfigurationError(
-                    f"Channel {channel_number}: LoopStart requires LoopLength to be defined"
+                    f"Channel {channel_number}: LoopStart requires LoopLength to be defined",
+                    path=path + ("LoopStart",),
                 )
 
             # Validate LoopLengthIsEnd flag consistency with LoopMode
@@ -263,22 +287,25 @@ def _validate_loop_settings(channel_data, channel_number):
 
                 if loop_mode == 1 and is_end != 1:
                     raise LoopConfigurationError(
-                        f"Channel {channel_number}: LoopMode 1 requires LoopLengthIsEnd to be 1"
+                        f"Channel {channel_number}: LoopMode 1 requires LoopLengthIsEnd to be 1",
+                        path=path + ("LoopLengthIsEnd",),
                     )
 
                 if loop_mode == 2 and is_end != 0:
                     raise LoopConfigurationError(
-                        f"Channel {channel_number}: LoopMode 2 requires LoopLengthIsEnd to be 0"
+                        f"Channel {channel_number}: LoopMode 2 requires LoopLengthIsEnd to be 0",
+                        path=path + ("LoopLengthIsEnd",),
                     )
 
 
-def _validate_sample_boundaries(channel_data, channel_number):
+def _validate_sample_boundaries(channel_data, channel_number, path: ValidationPath = ()):
     """
     Validate sample start and end points.
 
     Args:
         channel_data: Dictionary containing the channel data
         channel_number: Channel number
+        path: Tuple of YAML keys for error reporting
 
     Raises:
         CrossReferenceError: If validation fails
@@ -287,17 +314,19 @@ def _validate_sample_boundaries(channel_data, channel_number):
         if channel_data["SampleStart"] >= channel_data["SampleEnd"]:
             raise CrossReferenceError(
                 f"Channel {channel_number}: SampleStart ({channel_data['SampleStart']}) is greater than "
-                f"SampleEnd ({channel_data['SampleEnd']})"
+                f"SampleEnd ({channel_data['SampleEnd']})",
+                path=path + ("SampleStart",),
             )
 
 
-def _validate_zone_voltage_ranges(zones, channel_number):
+def _validate_zone_voltage_ranges(zones, channel_number, path: ValidationPath = ()):
     """
     Validate zone voltage ranges.
 
     Args:
         zones: Dictionary of zone numbers to zone data
         channel_number: Channel number
+        path: Tuple of YAML keys (preset_key, channel_key) for error reporting
 
     Raises:
         ZoneVoltageRangeError: If validation fails
@@ -331,13 +360,17 @@ def _validate_zone_voltage_ranges(zones, channel_number):
         zone2_num, zone2_volt = zone_voltages[i + 1]
 
         if zone1_volt <= zone2_volt:
+            zone_key = f"Zone {zone1_num}"
             raise ZoneVoltageRangeError(
                 f"Channel {channel_number}: Zone {zone1_num} voltage ({zone1_volt}) must be "
-                f"higher than Zone {zone2_num} voltage ({zone2_volt})"
+                f"higher than Zone {zone2_num} voltage ({zone2_volt})",
+                path=path + (zone_key, "MinVoltage"),
             )
 
 
-def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_number):
+def _validate_zone_relationships(
+    zone_data, channel_data, channel_number, zone_number, path: ValidationPath = ()
+):
     """
     Validate relationships within a zone.
 
@@ -346,6 +379,7 @@ def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_n
         channel_data: Dictionary containing the channel data
         channel_number: Channel number
         zone_number: Zone number
+        path: Tuple of YAML keys (preset_key, channel_key, zone_key) for error reporting
 
     Raises:
         CrossReferenceError: If validation fails
@@ -364,17 +398,20 @@ def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_n
         # But if LoopStart is defined, it requires LoopLength
         if zone_loop_start and not (zone_loop_length or channel_loop_length):
             raise LoopConfigurationError(
-                f"Channel {channel_number}, Zone {zone_number}: LoopStart requires LoopLength to be defined"
+                f"Channel {channel_number}, Zone {zone_number}: LoopStart requires LoopLength to be defined",
+                path=path + ("LoopStart",),
             )
         if channel_loop_start and not (zone_loop_length or channel_loop_length):
             raise LoopConfigurationError(
-                f"Channel {channel_number}, Zone {zone_number}: LoopStart requires LoopLength to be defined"
+                f"Channel {channel_number}, Zone {zone_number}: LoopStart requires LoopLength to be defined",
+                path=path + ("LoopStart",),
             )
 
         if not (zone_loop_length or channel_loop_length):
             raise LoopConfigurationError(
                 f"Channel {channel_number}, Zone {zone_number} has LoopMode {zone_data['LoopMode']} "
-                f"but LoopLength is not defined"
+                f"but LoopLength is not defined",
+                path=path + ("LoopMode",),
             )
 
     # Validate sample start and end points if defined at zone level
@@ -384,5 +421,6 @@ def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_n
         if sample_start >= sample_end:
             raise CrossReferenceError(
                 f"Channel {channel_number}, Zone {zone_number}: SampleStart ({sample_start}) "
-                f"is greater than SampleEnd ({sample_end})"
+                f"is greater than SampleEnd ({sample_end})",
+                path=path + ("SampleStart",),
             )
