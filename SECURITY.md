@@ -27,4 +27,3 @@ We aim to acknowledge new reports within 2 business days and to provide a remedi
 4. With the reporter’s consent, we credit them in the release notes.
 
 Thank you for helping keep the Assimil8or preset validator secure!***
-

@@ -32,8 +32,8 @@ Use it to:
 
 ### Warning!
 
-This tool is provided “as is”, without any warranties.  
-Always keep backups of your presets and samples.  
+This tool is provided “as is”, without any warranties.
+Always keep backups of your presets and samples.
 The authors are not responsible for any data loss, corrupted files, or equipment damage resulting from its use.
 
 ---
@@ -130,4 +130,4 @@ Additional resources:
 - [SECURITY.md](SECURITY.md) for responsible disclosure instructions
 - [CHANGELOG.md](CHANGELOG.md) for release history
 
-Licensed under the MIT License. 
+Licensed under the MIT License.

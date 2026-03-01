@@ -10,10 +10,7 @@ import sys
 from pathlib import Path
 from typing import List, Tuple
 
-from a8_validate.cross_reference_validator import (
-    CrossReferenceError,
-    validate_relationships,
-)
+from a8_validate.cross_reference_validator import CrossReferenceError, validate_relationships
 from a8_validate.file_system_validator import (
     FileSystemValidationError,
     InvalidPresetFilenameError,
@@ -21,12 +18,7 @@ from a8_validate.file_system_validator import (
     validate_sample_files,
 )
 from a8_validate.schema_validator import SchemaValidationError, validate_preset
-from a8_validate.yaml_parser import (
-    InvalidPresetError,
-    PresetParseError,
-    YAMLSyntaxError,
-    parse_yaml_file,
-)
+from a8_validate.yaml_parser import InvalidPresetError, PresetParseError, YAMLSyntaxError, parse_yaml_file
 
 
 def find_yml_files(directory: str) -> List[Path]:
@@ -58,11 +50,7 @@ def find_yml_files(directory: str) -> List[Path]:
     return [
         f
         for f in all_yml_files
-        if (
-            f.name not in ignore_patterns
-            and not f.name.startswith("midi")
-            and not f.name.startswith("._")
-        )
+        if (f.name not in ignore_patterns and not f.name.startswith("midi") and not f.name.startswith("._"))
     ]
 
 
@@ -142,15 +130,9 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Validate Assimil8or preset files in a directory"
-    )
-    parser.add_argument(
-        "directory", help="Directory containing preset .yml files and samples"
-    )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Enable verbose output"
-    )
+    parser = argparse.ArgumentParser(description="Validate Assimil8or preset files in a directory")
+    parser.add_argument("directory", help="Directory containing preset .yml files and samples")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
     parser.add_argument("--output", "-o", help="Output file for results (optional)")
     args = parser.parse_args()
 
@@ -180,16 +162,12 @@ def main():
             output_print("No .yml files found in {}".format(args.directory))
             return
 
-        output_print(
-            "Found {} preset files. Starting validation...".format(len(yml_files))
-        )
+        output_print("Found {} preset files. Starting validation...".format(len(yml_files)))
 
         results = []
         for file_path in yml_files:
             if args.verbose:
-                output_print(
-                    "Validating {}... ".format(file_path.name), end="", flush=True
-                )
+                output_print("Validating {}... ".format(file_path.name), end="", flush=True)
 
             success, message = validate_preset_file(file_path, sample_dir)
             results.append((file_path, success, message))
@@ -202,11 +180,7 @@ def main():
 
         # Print summary
         valid_count = sum(1 for _, success, _ in results if success)
-        output_print(
-            "\nValidation complete: {}/{}  files valid".format(
-                valid_count, len(results)
-            )
-        )
+        output_print("\nValidation complete: {}/{}  files valid".format(valid_count, len(results)))
 
         # Print details for invalid files
         invalid_files = [(path, msg) for path, success, msg in results if not success]

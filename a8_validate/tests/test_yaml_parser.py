@@ -7,12 +7,7 @@ from unittest import mock
 import pytest
 
 # Import the module that doesn't exist yet (this will cause the test to fail initially)
-from a8_validate.yaml_parser import (
-    InvalidPresetError,
-    PresetParseError,
-    YAMLSyntaxError,
-    parse_yaml_file,
-)
+from a8_validate.yaml_parser import InvalidPresetError, PresetParseError, YAMLSyntaxError, parse_yaml_file
 
 
 class TestYAMLParser:
@@ -222,12 +217,8 @@ class TestYAMLParser:
             # Check Zone in Channel 2
             assert channel2["Zone 1"]["Sample"] == "Acid_1.wav"
             assert channel2["Zone 1"]["LoopMode"] == 1  # This should remain an integer
-            assert (
-                channel2["Zone 1"]["LoopStart"] == 100
-            )  # This should remain an integer
-            assert (
-                channel2["Zone 1"]["LoopLength"] == 1000
-            )  # This should remain an integer
+            assert channel2["Zone 1"]["LoopStart"] == 100  # This should remain an integer
+            assert channel2["Zone 1"]["LoopLength"] == 1000  # This should remain an integer
         finally:
             # Clean up
             os.unlink(temp_path)

@@ -11,7 +11,7 @@
 - Use black for code formatting (120 character line length)
 - Use isort for import sorting (black-compatible profile)
 - Maximum line length: 120 characters
-- Run flake8 before committing (with max-line-length=120, extend-ignore=E203,W503)
+- Run flake8 before committing (with max-line-length=120, extend-ignore=E203,W503,D)
 
 ## Testing
 - Run tests using `pytest` from the virtual environment
@@ -43,4 +43,3 @@
 - Keep functions focused and single-purpose
 - Add docstrings for public functions and classes
 - Use type hints where appropriate
-
