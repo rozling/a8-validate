@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### Added
+- `validate_preset(..., mutate=False)` to validate without modifying the input: returns a normalized copy and leaves the original dict unchanged; default `mutate=True` preserves previous in-place behavior (issue #14)
 - pyproject.toml: project metadata, dependencies, optional dev extras, and `a8-validate` console script entrypoint (issue #8)
 - Structured validation path and line numbers for all validators (issue #12):
   - Cross-reference and file-system validators now set a `path` attribute (tuple of YAML keys) on their exceptions, matching the schema validator’s path shape

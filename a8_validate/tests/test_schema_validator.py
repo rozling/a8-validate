@@ -157,6 +157,50 @@ class TestSchemaValidator:
         assert "Pitch" in str(exc_info.value)
         assert "range" in str(exc_info.value).lower()
 
+    def test_validate_preset_mutate_false_leaves_input_unchanged(self):
+        """When mutate=False, the input dict is not modified."""
+        preset = {
+            "Preset 1": {
+                "Name": 42,  # number, would be normalized to "42"
+                "XfadeAWidth": "9.10",  # string, would be normalized to 9.1
+                "Channel 1": {
+                    "Pitch": "0.0",  # string, would be normalized to 0.0
+                    "Zone 1": {"Sample": "test.wav"},
+                },
+            }
+        }
+        original_name = preset["Preset 1"]["Name"]
+        original_xfade = preset["Preset 1"]["XfadeAWidth"]
+        original_pitch = preset["Preset 1"]["Channel 1"]["Pitch"]
+
+        result = validate_preset(preset, mutate=False)
+
+        # Input unchanged
+        assert preset["Preset 1"]["Name"] is original_name
+        assert preset["Preset 1"]["Name"] == 42
+        assert preset["Preset 1"]["XfadeAWidth"] is original_xfade
+        assert preset["Preset 1"]["XfadeAWidth"] == "9.10"
+        assert preset["Preset 1"]["Channel 1"]["Pitch"] is original_pitch
+        assert preset["Preset 1"]["Channel 1"]["Pitch"] == "0.0"
+        # Result is a normalized copy (different object)
+        assert result is not preset
+        assert result["Preset 1"]["Name"] == "42"
+        assert result["Preset 1"]["XfadeAWidth"] == 9.1
+        assert result["Preset 1"]["Channel 1"]["Pitch"] == 0.0
+
+    def test_validate_preset_mutate_true_returns_same_object(self):
+        """When mutate=True (default), preset is modified in place and returned."""
+        preset = {
+            "Preset 1": {
+                "Name": 42,
+                "Channel 1": {"Pitch": "0.0", "Zone 1": {"Sample": "test.wav"}},
+            }
+        }
+        result = validate_preset(preset, mutate=True)
+        assert result is preset
+        assert preset["Preset 1"]["Name"] == "42"
+        assert preset["Preset 1"]["Channel 1"]["Pitch"] == 0.0
+
     def test_validate_channel(self):
         """Test validation of a channel structure."""
         valid_channel = {
@@ -287,9 +331,7 @@ class TestSchemaValidator:
         validate_preset(complex_preset)
 
         # Now introduce an error deep in the structure
-        complex_preset["Preset 7"]["Channel 1"]["Zone 2"][
-            "MinVoltage"
-        ] = "+6.00"  # Out of range
+        complex_preset["Preset 7"]["Channel 1"]["Zone 2"]["MinVoltage"] = "+6.00"  # Out of range
 
         # Validation should raise InvalidValueError
         with pytest.raises(InvalidValueError) as exc_info:

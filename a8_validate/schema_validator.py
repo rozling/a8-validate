@@ -1,5 +1,6 @@
 """Schema validator module for Assimil8or preset files."""
 
+import copy
 import re
 
 
@@ -122,27 +123,34 @@ def _is_numeric_string(value):
     return bool(re.match(r"^[+-]?\d+(\.\d+)?$", value))
 
 
-def validate_preset(preset_data, path=()):
+def validate_preset(preset_data, path=(), mutate=True):
     """
     Validate a preset against the schema.
 
-    Note: This function modifies the input preset_data dictionary in place by
-    normalizing and validating parameter values. For example, string representations
-    of numbers are converted to their numeric types, and the Name parameter is
-    converted to a string if provided as a number.
+    When mutate=True (default), the input preset_data dictionary is modified in place:
+    parameter values are normalized (e.g. string numbers converted to int/float, Name
+    converted to string). When mutate=False, the input is left unchanged and a
+    normalized copy is validated and returned.
 
     Args:
-        preset_data: Dictionary containing the preset data (will be modified in place)
+        preset_data: Dictionary containing the preset data (modified in place if mutate=True)
         path: Tuple representing the path to this preset in the overall structure
+        mutate: If True, modify preset_data in place. If False, leave input unchanged
+                and return a normalized copy. Default True for backward compatibility.
+
+    Returns:
+        When mutate=False, returns the validated, normalized copy. When mutate=True,
+        returns the same preset_data dict (for convenience).
 
     Raises:
         SchemaValidationError: If validation fails
     """
+    if not mutate:
+        preset_data = copy.deepcopy(preset_data)
+
     for preset_key, preset_value in preset_data.items():
         if not preset_key.startswith("Preset "):
-            raise InvalidParameterError(
-                f"Invalid preset key: {preset_key}", path=path + (preset_key,)
-            )
+            raise InvalidParameterError(f"Invalid preset key: {preset_key}", path=path + (preset_key,))
 
         # Enforce channel count and order
         channel_keys = [k for k in preset_value.keys() if k.startswith("Channel ")]
@@ -152,9 +160,7 @@ def validate_preset(preset_data, path=()):
                 num = int(k.split(" ")[1])
                 channel_numbers.append(num)
             except (IndexError, ValueError):
-                raise InvalidParameterError(
-                    f"Invalid channel key format: {k}", path=path + (preset_key, k)
-                )
+                raise InvalidParameterError(f"Invalid channel key format: {k}", path=path + (preset_key, k))
         if len(channel_numbers) > 8:
             raise SchemaValidationError(
                 f"Preset {preset_key} has {len(channel_numbers)} channels, maximum allowed is 8",
@@ -208,6 +214,8 @@ def validate_preset(preset_data, path=()):
                     path=path + (preset_key, param),
                 )
 
+    return preset_data
+
 
 def validate_channel(channel_data, channel_number, path=()):
     """
@@ -255,15 +263,11 @@ def validate_channel(channel_data, channel_number, path=()):
             num = int(k.split(" ")[1])
             zone_numbers.append(num)
         except (IndexError, ValueError):
-            raise InvalidParameterError(
-                f"Invalid zone key format: {k}", path=path + (k,)
-            )
+            raise InvalidParameterError(f"Invalid zone key format: {k}", path=path + (k,))
 
     # Require at least one zone per channel
     if len(zone_numbers) == 0:
-        raise SchemaValidationError(
-            f"Channel {channel_number} must have at least one zone", path=path
-        )
+        raise SchemaValidationError(f"Channel {channel_number} must have at least one zone", path=path)
 
     if len(zone_numbers) > 8:
         raise SchemaValidationError(
