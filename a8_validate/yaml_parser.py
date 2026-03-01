@@ -81,7 +81,11 @@ def parse_yaml_file(file_path, return_line_map=False):
                 key, value = match.groups()
                 value = value.strip()
                 # If value is unquoted and needs quoting, add quotes
-                if value and not (value.startswith('"') or value.startswith("'")) and needs_quoting(value):
+                if (
+                    value
+                    and not (value.startswith('"') or value.startswith("'"))
+                    and needs_quoting(value)
+                ):
                     # Escape existing quotes in value
                     value_escaped = value.replace('"', '\\"')
                     value = f'"{value_escaped}"'
@@ -114,7 +118,9 @@ def parse_yaml_file(file_path, return_line_map=False):
                 current_path = path + (key,)
                 # Recursively construct value
                 if isinstance(value_node, yaml.MappingNode):
-                    value = self.construct_mapping(value_node, deep=deep, path=current_path)
+                    value = self.construct_mapping(
+                        value_node, deep=deep, path=current_path
+                    )
                 else:
                     value = self.construct_object(value_node, deep=deep)
                 mapping[key] = value

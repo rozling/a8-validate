@@ -259,7 +259,10 @@ class TestCrossReferenceValidator:
         # Error should mention the sample point issue
         assert "SampleStart" in str(exc_info.value)
         assert "SampleEnd" in str(exc_info.value)
-        assert "greater than" in str(exc_info.value).lower() or "after" in str(exc_info.value).lower()
+        assert (
+            "greater than" in str(exc_info.value).lower()
+            or "after" in str(exc_info.value).lower()
+        )
 
     def test_sample_start_end_as_strings(self):
         """Ensure numeric strings are properly validated for sample boundaries."""
@@ -331,7 +334,10 @@ class TestCrossReferenceValidator:
         # Error should mention the crossfade group issue
         assert "XfadeGroup" in str(exc_info.value)
         assert "A" in str(exc_info.value)
-        assert "minimum" in str(exc_info.value).lower() or "at least" in str(exc_info.value).lower()
+        assert (
+            "minimum" in str(exc_info.value).lower()
+            or "at least" in str(exc_info.value).lower()
+        )
 
     def test_missing_crossfade_cv(self):
         """Test validation of crossfade groups without a corresponding CV input."""

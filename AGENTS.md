@@ -16,7 +16,7 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 | **Format (apply)** | `venv/bin/black a8_validate/ scripts/ validate_directory.py` |
 | **Imports (check)** | `venv/bin/isort --check-only a8_validate/ scripts/ validate_directory.py` |
 | **Imports (apply)** | `venv/bin/isort a8_validate/ scripts/ validate_directory.py` |
-| **Run CLI** | `venv/bin/python validate_directory.py <directory> --verbose` |
+| **Run CLI** | `venv/bin/a8-validate <directory> --verbose` or `venv/bin/python validate_directory.py <directory> --verbose` |
 | **Validate subdirs** | `venv/bin/python scripts/validate_all_subdirs.py <directory>` |
 | **Generate ranges** | `PYTHONPATH=/workspace venv/bin/python scripts/generate_preset_ranges.py` |
 
@@ -45,7 +45,8 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 | Path | Purpose |
 |------|---------|
 | `a8_validate/` | Core validation logic (schema, cross-ref, WAV checks) |
-| `validate_directory.py` | CLI entry point |
+| `validate_directory.py` | CLI script (also exposed as `a8-validate` via pyproject.toml) |
+| `pyproject.toml` | Package metadata, dependencies, console script entrypoint |
 | `scripts/` | Utilities: `validate_all_subdirs.py`, `generate_preset_ranges.py` |
 | `a8_validate/tests/` | Pytest suite |
 
