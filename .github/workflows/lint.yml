@@ -1,5 +1,6 @@
 # Lint and format: run the same pre-commit hooks as locally so CI and local never drift.
 # Contributors should run: pre-commit install (then every commit runs these checks).
+# Action versions are pinned to full semver for reproducible CI; update intentionally.
 name: Lint
 
 on:
@@ -18,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: "3.11"
 

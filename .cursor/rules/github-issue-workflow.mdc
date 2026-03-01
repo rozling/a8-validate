@@ -11,11 +11,14 @@ When the user asks to fix or implement "issue N" (e.g. "fix issue 16"):
 1. **Read the issue first**
    Use the GitHub MCP `issue_read` tool with `method: "get"`. Derive `owner` and `repo` from the current repo's git remote (e.g. `git remote -v` → `https://github.com/rozling/a8-validate.git` → owner `rozling`, repo `a8-validate`).
 
-2. **Use a dedicated branch**
-   Create and switch to a branch before implementing, e.g. `fix/issue-<N>-<short-slug>` (e.g. `fix/issue-16-cli-options`). Base off current branch or `main` as appropriate.
+2. **Checkout main and pull latest**
+   Run `git checkout main` and `git pull` (or `git pull origin main`) so the fix branch is based on the latest version of the repo.
 
-3. **Implement and document**
+3. **Use a dedicated branch**
+   Create and switch to a branch before implementing, e.g. `fix/issue-<N>-<short-slug>` (e.g. `fix/issue-16-cli-options`). Base off `main`.
+
+4. **Implement and document**
    Follow the issue title/body. Add or update tests. Run tests and pre-commit before committing.
 
-4. **PR**
+5. **PR**
    When creating the pull request, reference the issue in the title or body (e.g. "fixes #16" or "Closes #16") so GitHub links and can auto-close the issue.

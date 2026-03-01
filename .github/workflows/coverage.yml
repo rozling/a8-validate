@@ -1,3 +1,4 @@
+# Action versions are pinned to full semver for reproducible CI; update intentionally.
 name: Coverage
 
 on:
@@ -16,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.2
     - name: Check for code changes
       id: changes
-      uses: dorny/paths-filter@v3
+      uses: dorny/paths-filter@v3.0.2
       with:
         filters: |
           code:
@@ -40,7 +41,7 @@ jobs:
 
     - name: Set up Python
       if: steps.changes.outputs.code == 'true'
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v6.2.0
       with:
         python-version: '3.11'
         cache: 'pip'
@@ -64,7 +65,7 @@ jobs:
 
     - name: Upload coverage report
       if: steps.changes.outputs.code == 'true'
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v6.0.0
       with:
         name: coverage-report
         path: htmlcov/

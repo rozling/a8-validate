@@ -23,6 +23,10 @@ We keep runtime dependencies (`requirements.txt`) lean; the `requirements-dev.tx
 3. Keep documentation (README, CLI help) in sync with behavior changes.
 4. Ensure every CLI or validation change is covered by tests.
 
+## CI / GitHub Actions
+
+Workflow action versions under `.github/workflows/` are **intentionally pinned** to full semver (e.g. `actions/checkout@v6.0.2`) so CI is reproducible. When updating an action, verify the tag exists and change the pin deliberately.
+
 ## Formatting, Linting & Tests
 
 **CI runs the same checks as pre-commit.** If the Lint workflow fails, run `pre-commit run --all-files` locally, fix any changes it makes, and push again.
