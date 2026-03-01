@@ -25,7 +25,9 @@ We keep runtime dependencies (`requirements.txt`) lean; the `requirements-dev.tx
 
 ## Formatting, Linting & Tests
 
-**Recommended:** Install pre-commit hooks once so every commit runs black, isort, and flake8 automatically:
+**CI runs the same checks as pre-commit.** If the Lint workflow fails, run `pre-commit run --all-files` locally, fix any changes it makes, and push again.
+
+**Recommended:** Install pre-commit hooks once so every commit runs black, isort, and flake8 automatically (avoids CI lint failures):
 
 ```bash
 venv/bin/pre-commit install

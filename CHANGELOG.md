@@ -14,6 +14,7 @@
 - Unused dependencies `click` and `rich` from requirements.txt, pyproject.toml, and dependabot; CLI uses argparse and plain print (issue #9)
 
 ### Changed
+- **Lint/format single source of truth:** black and isort config moved to `pyproject.toml`; CI Lint workflow now runs `pre-commit run --all-files` so CI uses the exact same hooks and versions as local (no more drift). CONTRIBUTING and README stress installing `pre-commit install` to avoid CI lint failures.
 - Applied black formatting across Python source and tests
 - AGENTS.md: Restructured for agents with quick-reference table, file layout, common tasks, troubleshooting, and before-commit checklist
 - CI: Bump GitHub Actions (`actions/cache` v4→v5, `actions/upload-artifact` v5→v6, `dorny/paths-filter` v2→v3)

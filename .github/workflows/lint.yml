@@ -1,10 +1,12 @@
+# Lint and format: run the same pre-commit hooks as locally so CI and local never drift.
+# Contributors should run: pre-commit install (then every commit runs these checks).
 name: Lint
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,34 +18,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.11'
-        cache: 'pip'
+      - uses: actions/checkout@v4
 
-    - name: Cache lint dependencies
-      uses: actions/cache@v5
-      with:
-        path: ~/.cache/pip
-        key: lint-deps-${{ hashFiles('requirements-dev.txt') }}
-        restore-keys: |
-          lint-deps-
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Install linting dependencies
-      run: |
-        pip install --upgrade pip
-        pip install flake8 black isort
+      - name: Install pre-commit
+        run: pip install pre-commit
 
-    - name: Run flake8
-      run: |
-        flake8 a8_validate/ validate_directory.py scripts/ --max-line-length=120 --extend-ignore=E203,W503,D
-
-    - name: Check code formatting with black
-      run: |
-        black --check --diff a8_validate/ validate_directory.py scripts/
-
-    - name: Check import sorting with isort
-      run: |
-        isort --check-only --diff a8_validate/ validate_directory.py scripts/
+      - name: Run pre-commit (lint & format)
+        run: pre-commit run --all-files
