@@ -43,7 +43,7 @@ jobs:
       if: steps.changes.outputs.code == 'true'
       uses: actions/setup-python@v6.2.0
       with:
-        python-version: '3.11'
+        python-version: '3.12'
         cache: 'pip'
 
     - name: Install dependencies
