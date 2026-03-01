@@ -1,6 +1,11 @@
 ## [Unreleased]
 
 ### Added
+- CLI options for flexibility and scriptability (issue #16):
+  - `--samples-dir PATH` – validate presets in one directory but resolve sample files from another
+  - `--schema-only` (alias `--no-samples`) – skip sample file existence/format and memory checks
+  - `--no-crossref` – skip cross-reference validation for quick schema-only checks
+  - `--json` – emit machine-readable results (results list + summary) for CI or batch tooling
 - Support for `.yaml` preset files: discovery globs both `*.yml` and `*.yaml`, and filename validation accepts `prstxxx.yaml` (issue #15)
 - CLI flag `--recursive` / `-r` to scan subdirectories; each preset is validated with its containing directory as the sample root (issue #15)
 - `validate_preset(..., mutate=False)` to validate without modifying the input: returns a normalized copy and leaves the original dict unchanged; default `mutate=True` preserves previous in-place behavior (issue #14)

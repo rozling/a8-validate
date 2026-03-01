@@ -77,3 +77,52 @@ class TestFindYmlFiles:
     def test_raises_for_nonexistent_directory(self):
         with pytest.raises(ValueError, match="Directory not found"):
             validate_directory.find_yml_files("/nonexistent/path/xyz")
+
+
+class TestValidatePresetFileOptions:
+    """Tests for validate_preset_file with run_crossref/run_samples options (issue #16)."""
+
+    def test_schema_only_passes_without_samples_or_crossref(self, tmp_path):
+        """With run_crossref=False and run_samples=False, only schema and filename are validated."""
+        preset_yml = tmp_path / "prst001.yml"
+        preset_yml.write_text(
+            "Preset 1:\n"
+            "  Name: Test\n"
+            "  Channel 1:\n"
+            "    Pitch: 0.00\n"
+            "    Zone 1:\n"
+            "      Sample: no_such_file.wav\n"
+        )
+        success, msg = validate_directory.validate_preset_file(
+            preset_yml, sample_dir=None, run_crossref=False, run_samples=False
+        )
+        assert success is True
+        assert msg == "Valid"
+
+    def test_json_output_is_valid_and_has_expected_structure(self, tmp_path, capsys):
+        """CLI --json emits valid JSON with results and summary (issue #16)."""
+        (tmp_path / "prst001.yml").write_text(
+            "Preset 1:\n  Name: A\n  Channel 1:\n    Pitch: 0.00\n    Zone 1:\n      Sample: x.wav\n"
+        )
+        (tmp_path / "prst002.yml").write_text("Preset 1:\n  Name: B\n  Channel 1:\n    Pitch: 0.00\n    Zone 1:\n")
+        # prst002 is invalid (Zone 1 missing Sample)
+        import sys
+
+        old_argv = sys.argv
+        sys.argv = ["a8-validate", str(tmp_path), "--json"]
+        try:
+            validate_directory.main()
+        finally:
+            sys.argv = old_argv
+        out, err = capsys.readouterr()
+        data = __import__("json").loads(out)
+        assert "results" in data
+        assert "summary" in data
+        assert data["summary"]["total"] == 2
+        assert len(data["results"]) == 2
+        assert data["results"][0]["file"]
+        assert "valid" in data["results"][0]
+        assert "message" in data["results"][0]
+        valid_count = sum(1 for r in data["results"] if r["valid"])
+        assert data["summary"]["valid"] == valid_count
+        assert data["summary"]["invalid"] == 2 - valid_count
