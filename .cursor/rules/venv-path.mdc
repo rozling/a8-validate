@@ -1,0 +1,16 @@
+---
+description: Use .venv for Python commands in a8-validate (venv may not exist)
+alwaysApply: true
+---
+
+# Virtual environment path (a8-validate)
+
+This project uses **`.venv`** (not `venv`). When running Python, pytest, pre-commit, or pip from the project root, use:
+
+- `.venv/bin/pytest`
+- `.venv/bin/pre-commit`
+- `.venv/bin/python`
+- `.venv/bin/pip`
+- etc.
+
+If a command fails with "no such file or directory: venv/bin/...", re-run using `.venv/bin/...` instead.

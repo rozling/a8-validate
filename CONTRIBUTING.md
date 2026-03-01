@@ -20,7 +20,7 @@ We keep runtime dependencies (`requirements.txt`) lean; the `requirements-dev.tx
 
 1. Create a feature branch off `main`.
 2. Make focused commits with clear messages.
-3. Keep documentation (README, CHANGELOG) in sync with behavior changes.
+3. Keep documentation (README, CLI help) in sync with behavior changes.
 4. Ensure every CLI or validation change is covered by tests.
 
 ## Formatting, Linting & Tests
@@ -54,7 +54,7 @@ venv/bin/pytest -v --tb=short
 
 - [ ] Tests pass locally (`venv/bin/pytest -v --tb=short`).
 - [ ] `black`, `isort`, and `flake8` pass with the repository settings (120 character columns).
-- [ ] User documentation updated (README, CLI help, CHANGELOG) when behavior changes.
+- [ ] User documentation updated (README, CLI help) when behavior changes.
 - [ ] No generated files or local artifacts committed.
 - [ ] Include context in the PR description: what changed, why, and how it’s tested.
 

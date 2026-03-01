@@ -27,7 +27,7 @@
 
 ### Fixed
 - Schema validation errors now use the exception’s structured `path` attribute for line lookup in the YAML line map instead of parsing the error message with regex, so line numbers stay correct when messages change (issue #11)
-- Open `--output` file with UTF-8 encoding so preset names or paths with non-ASCII characters are written correctly (issue #10)
+- Open `--output` file with UTF-8 encoding so preset names or paths with non-ASCII characters are written correctly (issues #10, #17)
 - Black formatting in `test_file_system_validator.py`
 
 ### Added
