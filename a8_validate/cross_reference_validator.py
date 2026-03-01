@@ -200,7 +200,9 @@ def _validate_cv_inputs(preset, path: ValidationPath = ()):
                 )
 
 
-def _validate_channel_relationships(channel_data, channel_number, path: ValidationPath = ()):
+def _validate_channel_relationships(
+    channel_data, channel_number, path: ValidationPath = ()
+):
     """
     Validate relationships within a channel.
 
@@ -232,7 +234,10 @@ def _validate_channel_relationships(channel_data, channel_number, path: Validati
     for zone_number, zone_data in zones.items():
         zone_key = f"Zone {zone_number}"
         _validate_zone_relationships(
-            zone_data, channel_data, channel_number, zone_number,
+            zone_data,
+            channel_data,
+            channel_number,
+            zone_number,
             path=path + (zone_key,),
         )
 
@@ -298,7 +303,9 @@ def _validate_loop_settings(channel_data, channel_number, path: ValidationPath =
                     )
 
 
-def _validate_sample_boundaries(channel_data, channel_number, path: ValidationPath = ()):
+def _validate_sample_boundaries(
+    channel_data, channel_number, path: ValidationPath = ()
+):
     """
     Validate sample start and end points.
 

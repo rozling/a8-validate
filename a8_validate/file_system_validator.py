@@ -106,7 +106,9 @@ def _collect_sample_references(preset_data):
     return sample_references
 
 
-def _validate_sample_file(preset_data, folder_path, sample_filename, path: ValidationPath):
+def _validate_sample_file(
+    preset_data, folder_path, sample_filename, path: ValidationPath
+):
     """
     Validate a sample file.
 
@@ -185,7 +187,9 @@ def _validate_sample_file(preset_data, folder_path, sample_filename, path: Valid
     _validate_sample_positions(preset_data, folder_path, sample_filename, path)
 
 
-def _validate_sample_positions(preset_data, folder_path, sample_filename, path: ValidationPath):
+def _validate_sample_positions(
+    preset_data, folder_path, sample_filename, path: ValidationPath
+):
     """
     Validate sample positions referenced in a preset.
 
