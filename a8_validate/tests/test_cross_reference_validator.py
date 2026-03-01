@@ -102,53 +102,77 @@ class TestCrossReferenceValidator:
         # Validation should succeed without raising exceptions
         validate_relationships(preset_with_default_loop)
 
-    def test_loop_mode_flag_consistency(self):
-        """Test validation of LoopLengthIsEnd flag consistency with LoopMode."""
-        # Test LoopMode 1 (Start/End) with incorrect LoopLengthIsEnd
-        preset_mode1_incorrect_flag = {
+    def test_loop_length_is_end_requires_end_after_start(self):
+        """When LoopLengthIsEnd=1, LoopLength is end position and must be > LoopStart."""
+        preset_end_before_start = {
             "Preset 1": {
                 "Name": "Test Preset",
                 "Channel 1": {
                     "Pitch": 0.00,
-                    "LoopMode": 1,  # Start/End mode
-                    "LoopLengthIsEnd": 0,  # Incorrect flag
+                    "LoopMode": 1,
+                    "LoopLengthIsEnd": 1,
+                    "LoopStart": 500,
+                    "LoopLength": 100,  # End (100) <= Start (500) - invalid
+                    "Zone 1": {"Sample": "test.wav"},
+                },
+            }
+        }
+
+        with pytest.raises(LoopConfigurationError) as exc_info:
+            validate_relationships(preset_end_before_start)
+
+        assert "LoopLengthIsEnd" in str(exc_info.value)
+        assert "LoopLength" in str(exc_info.value)
+
+        # Valid: end > start
+        preset_valid_end = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 1,
+                    "LoopLengthIsEnd": 1,
                     "LoopStart": 100,
                     "LoopLength": 1000,
                     "Zone 1": {"Sample": "test.wav"},
                 },
             }
         }
+        validate_relationships(preset_valid_end)
 
-        # Validation should raise LoopConfigurationError
-        with pytest.raises(LoopConfigurationError) as exc_info:
-            validate_relationships(preset_mode1_incorrect_flag)
-
-        # Error should mention LoopMode and LoopLengthIsEnd
-        assert "LoopMode 1" in str(exc_info.value)
-        assert "LoopLengthIsEnd" in str(exc_info.value)
-
-        # Test LoopMode 2 (Start/Length) with incorrect LoopLengthIsEnd
-        preset_mode2_incorrect_flag = {
+    def test_loop_mode_independent_of_loop_length_is_end(self):
+        """LoopMode (0=Off, 1=Normal, 2=Gated) is independent of LoopLengthIsEnd (end vs length)."""
+        # LoopMode 1 with LoopLengthIsEnd=0 (length) - valid
+        preset_mode1_length = {
             "Preset 1": {
                 "Name": "Test Preset",
                 "Channel 1": {
                     "Pitch": 0.00,
-                    "LoopMode": 2,  # Start/Length mode
-                    "LoopLengthIsEnd": 1,  # Incorrect flag
+                    "LoopMode": 1,
+                    "LoopLengthIsEnd": 0,
+                    "LoopStart": 100,
+                    "LoopLength": 900,
+                    "Zone 1": {"Sample": "test.wav"},
+                },
+            }
+        }
+        validate_relationships(preset_mode1_length)
+
+        # LoopMode 2 with LoopLengthIsEnd=1 (end) - valid
+        preset_mode2_end = {
+            "Preset 1": {
+                "Name": "Test Preset",
+                "Channel 1": {
+                    "Pitch": 0.00,
+                    "LoopMode": 2,
+                    "LoopLengthIsEnd": 1,
                     "LoopStart": 100,
                     "LoopLength": 1000,
                     "Zone 1": {"Sample": "test.wav"},
                 },
             }
         }
-
-        # Validation should raise LoopConfigurationError
-        with pytest.raises(LoopConfigurationError) as exc_info:
-            validate_relationships(preset_mode2_incorrect_flag)
-
-        # Error should mention LoopMode and LoopLengthIsEnd
-        assert "LoopMode 2" in str(exc_info.value)
-        assert "LoopLengthIsEnd" in str(exc_info.value)
+        validate_relationships(preset_mode2_end)
 
     def test_invalid_zone_voltage_ranges(self):
         """Test validation of zones with overlapping or invalid voltage ranges."""
