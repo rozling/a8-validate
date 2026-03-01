@@ -12,6 +12,7 @@
 - CI: Bump GitHub Actions (`actions/cache` v4→v5, `actions/upload-artifact` v5→v6, `dorny/paths-filter` v2→v3)
 
 ### Fixed
+- Open `--output` file with UTF-8 encoding so preset names or paths with non-ASCII characters are written correctly (issue #10)
 - Black formatting in `test_file_system_validator.py`
 
 ### Added

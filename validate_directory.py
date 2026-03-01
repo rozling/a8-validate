@@ -156,7 +156,7 @@ def main():
 
     output_file = None
     if args.output:
-        output_file = open(args.output, "w")
+        output_file = open(args.output, "w", encoding="utf-8")
 
         def output_print(*args, **kwargs):
             # Handle end and flush separately to avoid issues
