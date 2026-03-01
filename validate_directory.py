@@ -84,39 +84,20 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
         try:
             validate_preset(preset_data)
         except SchemaValidationError as e:
-            # Attempt to extract parameter and preset name from error message
-            param_name = None
-            preset_key = None
-            msg = str(e)
-            import re
-
-            param_match = re.search(r"Parameter (\w+)", msg)
-            preset_match = re.search(r"in (Preset \d+)", msg)
-            if param_match:
-                param_name = param_match.group(1)
-            if preset_match:
-                preset_key = preset_match.group(1)
-            # Build path tuple
-            path = None
-            if preset_key and param_name:
-                path = (preset_key, param_name)
-            elif param_name:
-                path = (param_name,)
-            # Get line number from line_map if available
+            # Prefer structured path from the exception for line lookup (stable when messages change)
+            path = getattr(e, "path", None)
             line_number = None
             if path and path in line_map:
                 line_number = line_map[path]
-            else:
-                # Try to find line number by partial matching keys in line_map
+            elif path:
+                # Fallback: find line by prefix match (e.g. path may be longer than stored keys)
                 for key_path in line_map.keys():
-                    if path and all(p == k for p, k in zip(path, key_path)):
+                    if all(p == k for p, k in zip(path, key_path)):
                         line_number = line_map[key_path]
                         break
-
             if line_number:
                 raise SchemaValidationError(f"{e} (line {line_number})") from e
-            else:
-                raise
+            raise
 
         # Validate cross-references
         validate_relationships(preset_data)
