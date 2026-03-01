@@ -16,6 +16,8 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 | **Format (apply)** | `venv/bin/black a8_validate/ scripts/ validate_directory.py` |
 | **Imports (check)** | `venv/bin/isort --check-only a8_validate/ scripts/ validate_directory.py` |
 | **Imports (apply)** | `venv/bin/isort a8_validate/ scripts/ validate_directory.py` |
+| **Pre-commit (run)** | `venv/bin/pre-commit run --all-files` |
+| **Pre-commit (install hooks)** | `venv/bin/pre-commit install` (then every commit runs black, isort, flake8) |
 | **Run CLI** | `venv/bin/a8-validate <directory> --verbose` or `venv/bin/python validate_directory.py <directory> --verbose` |
 | **Validate subdirs** | `venv/bin/python scripts/validate_all_subdirs.py <directory>` |
 | **Generate ranges** | `PYTHONPATH=/workspace venv/bin/python scripts/generate_preset_ranges.py` |
@@ -25,9 +27,8 @@ This is a **pure-Python CLI tool** — no web server, database, or Docker. See `
 ## Before committing
 
 1. Run tests: `venv/bin/pytest -v --tb=short`
-2. Run lint: flake8 (see table above)
-3. Run format check: black and isort (or use `venv/bin/pre-commit run`)
-4. Add a `CHANGELOG.md` entry for any behavior, docs, or tooling change
+2. Run lint and format: either run **`venv/bin/pre-commit run --all-files`** (or `venv/bin/pre-commit run` on staged files), or rely on the git hook if you’ve run **`venv/bin/pre-commit install`** once—then every commit will run black, isort, and flake8 automatically.
+3. Add a `CHANGELOG.md` entry for any behavior, docs, or tooling change
 
 ---
 

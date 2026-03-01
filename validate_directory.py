@@ -8,7 +8,7 @@ This script validates all Assimil8or preset files (.yml) in a specified director
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from a8_validate.cross_reference_validator import (
     CrossReferenceError,
@@ -27,6 +27,22 @@ from a8_validate.yaml_parser import (
     YAMLSyntaxError,
     parse_yaml_file,
 )
+
+
+def _line_for_path(
+    path: Optional[Tuple[str, ...]],
+    line_map: Dict[Tuple[str, ...], int],
+) -> Optional[int]:
+    """Resolve a validation path to a line number using the YAML line_map. Returns None if not found."""
+    if not path or not line_map:
+        return None
+    if path in line_map:
+        return line_map[path]
+    # Fallback: prefix match (path may be longer than stored keys)
+    for key_path in line_map.keys():
+        if len(key_path) <= len(path) and path[: len(key_path)] == key_path:
+            return line_map[key_path]
+    return None
 
 
 def find_yml_files(directory: str) -> List[Path]:
@@ -84,19 +100,11 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
         try:
             validate_preset(preset_data)
         except SchemaValidationError as e:
-            # Prefer structured path from the exception for line lookup (stable when messages change)
-            path = getattr(e, "path", None)
-            line_number = None
-            if path and path in line_map:
-                line_number = line_map[path]
-            elif path:
-                # Fallback: find line by prefix match (e.g. path may be longer than stored keys)
-                for key_path in line_map.keys():
-                    if all(p == k for p, k in zip(path, key_path)):
-                        line_number = line_map[key_path]
-                        break
-            if line_number:
-                raise SchemaValidationError(f"{e} (line {line_number})") from e
+            line_number = _line_for_path(getattr(e, "path", None), line_map)
+            if line_number is not None:
+                raise SchemaValidationError(
+                    f"{e} (line {line_number})", path=getattr(e, "path", None)
+                ) from e
             raise
 
         # Validate cross-references
@@ -115,9 +123,17 @@ def validate_preset_file(file_path: Path, sample_dir: Path) -> Tuple[bool, str]:
     except SchemaValidationError as e:
         return False, f"Schema validation error: {e}"
     except CrossReferenceError as e:
-        return False, f"Cross-reference error: {e}"
+        line_number = _line_for_path(getattr(e, "path", None), line_map)
+        msg = str(e)
+        if line_number is not None:
+            msg = f"{msg} (line {line_number})"
+        return False, f"Cross-reference error: {msg}"
     except FileSystemValidationError as e:
-        return False, f"Sample file error: {e}"
+        line_number = _line_for_path(getattr(e, "path", None), line_map)
+        msg = str(e)
+        if line_number is not None:
+            msg = f"{msg} (line {line_number})"
+        return False, f"Sample file error: {msg}"
     except Exception as e:
         return False, f"Unexpected error: {e}"
 

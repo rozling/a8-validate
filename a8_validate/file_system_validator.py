@@ -3,12 +3,23 @@
 import os
 import re
 import wave
+from typing import Optional, Tuple
+
+# Path shape: (preset_key, channel_key?, zone_key?) — tuple of YAML keys for line_map lookup
+ValidationPath = Tuple[str, ...]
+
+
+def _path_to_context(path: ValidationPath) -> str:
+    """Build human-readable context string from a validation path."""
+    return ", ".join(path) if path else ""
 
 
 class FileSystemValidationError(Exception):
     """Base exception for file system validation errors."""
 
-    pass
+    def __init__(self, message: str, path: Optional[ValidationPath] = None):
+        super().__init__(message)
+        self.path = path
 
 
 class SampleFileNotFoundError(FileSystemValidationError):
@@ -54,8 +65,8 @@ def validate_sample_files(preset_data, folder_path):
     sample_references = _collect_sample_references(preset_data)
 
     # Validate each sample file
-    for context, sample_filename in sample_references:
-        _validate_sample_file(preset_data, folder_path, sample_filename, context)
+    for path, sample_filename in sample_references:
+        _validate_sample_file(preset_data, folder_path, sample_filename, path)
 
     # Check total memory usage
     total_memory = calculate_total_memory(preset_data, folder_path)
@@ -74,7 +85,7 @@ def _collect_sample_references(preset_data):
         preset_data: Dictionary containing the preset data
 
     Returns:
-        List of tuples (context, sample_filename)
+        List of tuples (path, sample_filename) where path is (preset_key, channel_key, zone_key)
     """
     sample_references = []
 
@@ -89,13 +100,15 @@ def _collect_sample_references(preset_data):
 
                 if "Sample" in zone_value:
                     sample_filename = zone_value["Sample"]
-                    context = f"{preset_key}, {channel_key}, {zone_key}"
-                    sample_references.append((context, sample_filename))
+                    path = (preset_key, channel_key, zone_key)
+                    sample_references.append((path, sample_filename))
 
     return sample_references
 
 
-def _validate_sample_file(preset_data, folder_path, sample_filename, context):
+def _validate_sample_file(
+    preset_data, folder_path, sample_filename, path: ValidationPath
+):
     """
     Validate a sample file.
 
@@ -103,24 +116,27 @@ def _validate_sample_file(preset_data, folder_path, sample_filename, context):
         preset_data: Dictionary containing the preset data
         folder_path: Path to the folder containing the sample files
         sample_filename: Filename of the sample
-        context: Context for error messages
+        path: Tuple (preset_key, channel_key, zone_key) for error reporting and line_map
 
     Raises:
         SampleFileNotFoundError: If the sample file is not found
         InvalidSampleFormatError: If the sample file has an invalid format
     """
     sample_path = os.path.join(folder_path, sample_filename)
+    context = _path_to_context(path)
 
     # Check if file exists
     if not os.path.exists(sample_path):
         raise SampleFileNotFoundError(
-            f"Sample file '{sample_filename}' referenced in {context} not found"
+            f"Sample file '{sample_filename}' referenced in {context} not found",
+            path=path,
         )
 
     # Check if file is a valid WAV file
     if not sample_filename.lower().endswith(".wav"):
         raise InvalidSampleFormatError(
-            f"Sample file '{sample_filename}' referenced in {context} is not a WAV file format"
+            f"Sample file '{sample_filename}' referenced in {context} is not a WAV file format",
+            path=path,
         )
 
     # Try to open as WAV
@@ -135,13 +151,15 @@ def _validate_sample_file(preset_data, folder_path, sample_filename, context):
             if channels not in [1, 2]:
                 raise InvalidSampleFormatError(
                     f"Sample file '{sample_filename}' referenced in {context} "
-                    f"has an invalid number of channels: {channels}"
+                    f"has an invalid number of channels: {channels}",
+                    path=path,
                 )
 
             if sample_width not in [1, 2, 3, 4]:
                 raise InvalidSampleFormatError(
                     f"Sample file '{sample_filename}' referenced in {context} "
-                    f"has an invalid sample width: {sample_width}"
+                    f"has an invalid sample width: {sample_width}",
+                    path=path,
                 )
 
             # Validate sample rate
@@ -149,24 +167,29 @@ def _validate_sample_file(preset_data, folder_path, sample_filename, context):
             if frame_rate not in valid_rates:
                 raise InvalidSampleFormatError(
                     f"Sample file '{sample_filename}' referenced in {context} "
-                    f"has an invalid sample rate: {frame_rate}Hz"
+                    f"has an invalid sample rate: {frame_rate}Hz",
+                    path=path,
                 )
 
     except wave.Error:
         raise InvalidSampleFormatError(
             f"Sample file '{sample_filename}' referenced in {context} "
-            f"is not a valid WAV file format"
+            f"is not a valid WAV file format",
+            path=path,
         )
     except Exception as e:
         raise FileSystemValidationError(
-            f"Error validating sample file '{sample_filename}' referenced in {context}: {str(e)}"
+            f"Error validating sample file '{sample_filename}' referenced in {context}: {str(e)}",
+            path=path,
         )
 
     # Validate sample positions if referenced in the preset
-    _validate_sample_positions(preset_data, folder_path, sample_filename, context)
+    _validate_sample_positions(preset_data, folder_path, sample_filename, path)
 
 
-def _validate_sample_positions(preset_data, folder_path, sample_filename, context):
+def _validate_sample_positions(
+    preset_data, folder_path, sample_filename, path: ValidationPath
+):
     """
     Validate sample positions referenced in a preset.
 
@@ -174,27 +197,18 @@ def _validate_sample_positions(preset_data, folder_path, sample_filename, contex
         preset_data: Dictionary containing the preset data
         folder_path: Path to the folder containing the sample files
         sample_filename: Filename of the sample
-        context: Context for error messages
+        path: Tuple (preset_key, channel_key, zone_key) for lookup and error reporting
 
     Raises:
         FileSystemValidationError: If validation fails
     """
-    # Parse context to get channel and zone
-    parts = [part.strip() for part in context.split(",")]
-    if len(parts) < 3:
+    if len(path) < 3:
         return
 
-    preset_key = parts[0]
-    channel_key = parts[1]
-    zone_key = parts[2]
+    preset_key, channel_key, zone_key = path[0], path[1], path[2]
 
     # Get channel and zone data
-    preset_value = None
-    for key, value in preset_data.items():
-        if key == preset_key:
-            preset_value = value
-            break
-
+    preset_value = preset_data.get(preset_key)
     if preset_value is None:
         return
 
@@ -209,6 +223,7 @@ def _validate_sample_positions(preset_data, folder_path, sample_filename, contex
     # Get sample length
     sample_path = os.path.join(folder_path, sample_filename)
     sample_length = get_sample_length(sample_path)
+    context = _path_to_context(path)
 
     # Validate LoopStart
     loop_start = zone_value.get("LoopStart")
@@ -217,7 +232,8 @@ def _validate_sample_positions(preset_data, folder_path, sample_filename, contex
 
     if loop_start is not None and loop_start >= sample_length:
         raise FileSystemValidationError(
-            f"LoopStart ({loop_start}) in {context} exceeds sample length ({sample_length})"
+            f"LoopStart ({loop_start}) in {context} exceeds sample length ({sample_length})",
+            path=path + ("LoopStart",),
         )
 
     # Validate SampleStart
@@ -227,7 +243,8 @@ def _validate_sample_positions(preset_data, folder_path, sample_filename, contex
 
     if sample_start is not None and sample_start >= sample_length:
         raise FileSystemValidationError(
-            f"SampleStart ({sample_start}) in {context} exceeds sample length ({sample_length})"
+            f"SampleStart ({sample_start}) in {context} exceeds sample length ({sample_length})",
+            path=path + ("SampleStart",),
         )
 
     # Validate SampleEnd
