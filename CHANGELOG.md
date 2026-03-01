@@ -3,12 +3,16 @@
 ### Added
 - pyproject.toml: project metadata, dependencies, optional dev extras, and `a8-validate` console script entrypoint (issue #8)
 
+### Removed
+- Unused dependencies `click` and `rich` from requirements.txt, pyproject.toml, and dependabot; CLI uses argparse and plain print (issue #9)
+
 ### Changed
 - Applied black formatting across Python source and tests
 - AGENTS.md: Restructured for agents with quick-reference table, file layout, common tasks, troubleshooting, and before-commit checklist
 - CI: Bump GitHub Actions (`actions/cache` v4→v5, `actions/upload-artifact` v5→v6, `dorny/paths-filter` v2→v3)
 
 ### Fixed
+- Open `--output` file with UTF-8 encoding so preset names or paths with non-ASCII characters are written correctly (issue #10)
 - Black formatting in `test_file_system_validator.py`
 
 ### Added
