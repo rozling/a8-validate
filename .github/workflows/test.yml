@@ -1,3 +1,4 @@
+# Action versions are pinned to full semver for reproducible CI; update intentionally.
 name: Tests
 
 on:
@@ -20,10 +21,10 @@ jobs:
         python-version: ['3.11']
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.2
     - name: Check for code changes
       id: changes
-      uses: dorny/paths-filter@v3
+      uses: dorny/paths-filter@v3.0.2
       with:
         filters: |
           code:
@@ -44,7 +45,7 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }}
       if: steps.changes.outputs.code == 'true'
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v6.2.0
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -68,7 +69,7 @@ jobs:
 
     - name: Upload test results
       if: steps.changes.outputs.code == 'true'
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v6.0.0
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.python-version }}
         path: .pytest_cache/
