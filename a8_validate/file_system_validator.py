@@ -72,8 +72,7 @@ def validate_sample_files(preset_data, folder_path):
     total_memory = calculate_total_memory(preset_data, folder_path)
     if total_memory > MAX_MEMORY_BYTES:
         raise MemoryLimitExceededError(
-            f"Total memory usage ({total_memory / (1024 * 1024):.2f}MB) "
-            f"exceeds the limit of 422MB"
+            f"Total memory usage ({total_memory / (1024 * 1024):.2f}MB) " f"exceeds the limit of 422MB"
         )
 
 
@@ -106,9 +105,7 @@ def _collect_sample_references(preset_data):
     return sample_references
 
 
-def _validate_sample_file(
-    preset_data, folder_path, sample_filename, path: ValidationPath
-):
+def _validate_sample_file(preset_data, folder_path, sample_filename, path: ValidationPath):
     """
     Validate a sample file.
 
@@ -173,8 +170,7 @@ def _validate_sample_file(
 
     except wave.Error:
         raise InvalidSampleFormatError(
-            f"Sample file '{sample_filename}' referenced in {context} "
-            f"is not a valid WAV file format",
+            f"Sample file '{sample_filename}' referenced in {context} " f"is not a valid WAV file format",
             path=path,
         )
     except Exception as e:
@@ -187,9 +183,7 @@ def _validate_sample_file(
     _validate_sample_positions(preset_data, folder_path, sample_filename, path)
 
 
-def _validate_sample_positions(
-    preset_data, folder_path, sample_filename, path: ValidationPath
-):
+def _validate_sample_positions(preset_data, folder_path, sample_filename, path: ValidationPath):
     """
     Validate sample positions referenced in a preset.
 
@@ -319,8 +313,7 @@ def calculate_total_memory(preset_data, folder_path):
                 import warnings
 
                 warnings.warn(
-                    f"Cannot calculate memory for '{sample_filename}': {str(e)}. "
-                    f"Skipping from memory calculation.",
+                    f"Cannot calculate memory for '{sample_filename}': {str(e)}. " f"Skipping from memory calculation.",
                     UserWarning,
                 )
             except Exception as e:
@@ -328,8 +321,7 @@ def calculate_total_memory(preset_data, folder_path):
                 import warnings
 
                 warnings.warn(
-                    f"Cannot read '{sample_filename}': {str(e)}. "
-                    f"Skipping from memory calculation.",
+                    f"Cannot read '{sample_filename}': {str(e)}. " f"Skipping from memory calculation.",
                     UserWarning,
                 )
 
@@ -359,8 +351,7 @@ def validate_preset_filename(filename):
     pattern = r"^prst\d{3}\.yml$"
     if not re.match(pattern, filename):
         raise InvalidPresetFilenameError(
-            f"Preset filename '{filename}' does not match required format 'prstxxx.yml' "
-            f"(where xxx is 000-999)"
+            f"Preset filename '{filename}' does not match required format 'prstxxx.yml' " f"(where xxx is 000-999)"
         )
 
     # Extract the number part and validate it's in range 000-999
@@ -368,6 +359,4 @@ def validate_preset_filename(filename):
     if match:
         number = int(match.group(1))
         if number < 0 or number > 999:
-            raise InvalidPresetFilenameError(
-                f"Preset filename '{filename}' number must be between 000 and 999"
-            )
+            raise InvalidPresetFilenameError(f"Preset filename '{filename}' number must be between 000 and 999")

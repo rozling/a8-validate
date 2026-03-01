@@ -87,9 +87,7 @@ def _validate_preset_relationships(preset, path: ValidationPath = ()):
     # Validate each channel's internal relationships
     for channel_number, channel_data in channels.items():
         channel_key = f"Channel {channel_number}"
-        _validate_channel_relationships(
-            channel_data, channel_number, path=path + (channel_key,)
-        )
+        _validate_channel_relationships(channel_data, channel_number, path=path + (channel_key,))
 
 
 def _validate_crossfade_groups(preset, channels, path: ValidationPath = ()):
@@ -183,10 +181,7 @@ def _validate_cv_inputs(preset, path: ValidationPath = ()):
     """
     # Check all CV input references in the preset
     for key, value in preset.items():
-        if any(
-            key.startswith(prefix)
-            for prefix in ["XfadeACV", "XfadeBCV", "XfadeCCV", "XfadeDCV", "Data2asCV"]
-        ):
+        if any(key.startswith(prefix) for prefix in ["XfadeACV", "XfadeBCV", "XfadeCCV", "XfadeDCV", "Data2asCV"]):
             if not isinstance(value, str):
                 raise CVInputReferenceError(
                     f"{key} must be a string, got {type(value).__name__}",
@@ -200,9 +195,7 @@ def _validate_cv_inputs(preset, path: ValidationPath = ()):
                 )
 
 
-def _validate_channel_relationships(
-    channel_data, channel_number, path: ValidationPath = ()
-):
+def _validate_channel_relationships(channel_data, channel_number, path: ValidationPath = ()):
     """
     Validate relationships within a channel.
 
@@ -303,9 +296,7 @@ def _validate_loop_settings(channel_data, channel_number, path: ValidationPath =
                     )
 
 
-def _validate_sample_boundaries(
-    channel_data, channel_number, path: ValidationPath = ()
-):
+def _validate_sample_boundaries(channel_data, channel_number, path: ValidationPath = ()):
     """
     Validate sample start and end points.
 
@@ -375,9 +366,7 @@ def _validate_zone_voltage_ranges(zones, channel_number, path: ValidationPath = 
             )
 
 
-def _validate_zone_relationships(
-    zone_data, channel_data, channel_number, zone_number, path: ValidationPath = ()
-):
+def _validate_zone_relationships(zone_data, channel_data, channel_number, zone_number, path: ValidationPath = ()):
     """
     Validate relationships within a zone.
 

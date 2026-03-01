@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# setuptools editable install
+*.egg-info/
+*.egg
+
 # Virtual environment
 venv/
 env/
