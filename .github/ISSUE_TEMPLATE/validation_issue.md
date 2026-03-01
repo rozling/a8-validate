@@ -31,7 +31,7 @@ If relevant, specify:
 
 ## Environment
 - OS: [e.g., macOS 14.0, Ubuntu 22.04, Windows 11]
-- Python version: [e.g., 3.11.0]
+- Python version: [e.g., 3.12.0]
 - a8-validate version: [e.g., commit hash]
 
 ## Additional Context
