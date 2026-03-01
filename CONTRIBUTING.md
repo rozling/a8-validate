@@ -25,17 +25,27 @@ We keep runtime dependencies (`requirements.txt`) lean; the `requirements-dev.tx
 
 ## Formatting, Linting & Tests
 
+**Recommended:** Install pre-commit hooks once so every commit runs black, isort, and flake8 automatically:
+
 ```bash
+venv/bin/pre-commit install
+```
+
+Then before pushing, run tests:
+
+```bash
+venv/bin/pytest -v --tb=short
+```
+
+If you don’t use the hook, run formatting and lint manually before committing:
+
+```bash
+venv/bin/pre-commit run --all-files
+# or individually:
 venv/bin/black a8_validate/ scripts/ validate_directory.py
 venv/bin/isort a8_validate/ scripts/ validate_directory.py
 venv/bin/flake8 a8_validate/ scripts/ validate_directory.py
 venv/bin/pytest -v --tb=short
-```
-
-Alternatively, install pre-commit hooks:
-
-```bash
-venv/bin/pre-commit install
 ```
 
 ## Pull Request Checklist
