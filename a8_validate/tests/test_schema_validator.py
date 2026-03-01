@@ -287,9 +287,7 @@ class TestSchemaValidator:
         validate_preset(complex_preset)
 
         # Now introduce an error deep in the structure
-        complex_preset["Preset 7"]["Channel 1"]["Zone 2"][
-            "MinVoltage"
-        ] = "+6.00"  # Out of range
+        complex_preset["Preset 7"]["Channel 1"]["Zone 2"]["MinVoltage"] = "+6.00"  # Out of range
 
         # Validation should raise InvalidValueError
         with pytest.raises(InvalidValueError) as exc_info:

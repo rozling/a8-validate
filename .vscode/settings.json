@@ -6,7 +6,7 @@
   "python.linting.flake8Enabled": true,
   "python.linting.flake8Args": [
     "--max-line-length=120",
-    "--extend-ignore=E203,W503"
+    "--extend-ignore=E203,W503,D"
   ],
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": [
@@ -40,4 +40,3 @@
     "${workspaceFolder}"
   ]
 }
-

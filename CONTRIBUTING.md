@@ -62,4 +62,3 @@ Before tagging a release:
 4. Create a Git tag (e.g. `v1.0.0`) and push tags to GitHub.
 
 Thanks again for contributing! If you have questions, open an issue or start a discussion on GitHub.***
-

@@ -13,7 +13,7 @@ concurrency:
 jobs:
   security:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v6
     - name: Set up Python
@@ -21,28 +21,27 @@ jobs:
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Install dependencies
       run: |
         pip install --upgrade pip
         pip install safety pip-audit
-    
+
     - name: Run Safety check
       run: |
         safety check --file requirements.txt || true
-    
+
     - name: Install project dependencies first
       run: |
         pip install -r requirements.txt
-    
+
     - name: Run pip-audit (fail on any vulnerability)
       run: |
         pip-audit --desc
-    
+
     - name: Show detailed vulnerability information
       if: failure()
       run: |
         echo "Detailed vulnerability report:"
         pip-audit --format json --desc | python3 -m json.tool || true
       continue-on-error: true
-

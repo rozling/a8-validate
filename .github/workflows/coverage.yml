@@ -14,7 +14,7 @@ jobs:
   coverage:
     if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v6
     - name: Check for code changes
@@ -37,36 +37,34 @@ jobs:
             - 'SECURITY.md'
             - '.cursorrules'
             - '.vscode/**'
-    
+
     - name: Set up Python
       if: steps.changes.outputs.code == 'true'
       uses: actions/setup-python@v6
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Install dependencies
       if: steps.changes.outputs.code == 'true'
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-    
+
     - name: Run tests with coverage
       if: steps.changes.outputs.code == 'true'
       run: |
         python -m pytest --cov=a8_validate --cov-report=xml --cov-report=html --cov-report=term -n auto
-    
+
     - name: Skip message
       if: steps.changes.outputs.code != 'true'
       run: |
         echo "Skipping coverage - only documentation files changed"
-    
+
     - name: Upload coverage report
       if: steps.changes.outputs.code == 'true'
       uses: actions/upload-artifact@v6
       with:
         name: coverage-report
         path: htmlcov/
-
-
