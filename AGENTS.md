@@ -24,6 +24,17 @@ This project uses **`.venv`** (use `venv/` only if that is what exists in your c
 | **Validate subdirs** | `.venv/bin/python scripts/validate_all_subdirs.py <directory>` |
 | **Generate ranges** | `PYTHONPATH=/workspace .venv/bin/python scripts/generate_preset_ranges.py` |
 
+### Creating a PR
+
+Do not use GitHub MCP for PR creation. Use the gh CLI:
+
+```bash
+git push -u origin HEAD
+gh pr create --base main --head "$(git branch --show-current)" --fill
+```
+
+`--fill` uses the first commit message for the PR title and body. Ensure `gh auth status` succeeds.
+
 ---
 
 ## Before committing
@@ -60,7 +71,7 @@ This project uses **`.venv`** (use `venv/` only if that is what exists in your c
 
 - **Validate presets:** Run the CLI on a directory; use `--verbose` and `--output` as needed.
 - **Change validation logic:** Update code in `a8_validate/`, add or adjust tests in `a8_validate/tests/`. If you add or change mutation behavior (e.g. `mutate=False`), test that the original input is unchanged when applicable and that the return value is correct for both modes.
-- **Implement a GitHub issue:** Use the GitHub MCP `issue_read` (owner/repo from `git remote -v`) to get the issue body before implementing. Create a dedicated branch `fix/issue-<N>-<slug>` first. In the PR, use "fixes #N" so the issue is linked and closed on merge.
+- **Implement a GitHub issue:** Use the GitHub MCP `issue_read` (or `gh issue view <N>`) to get the issue body. Create a dedicated branch `fix/issue-<N>-<slug>` first. For the PR, use the gh CLI: `git push -u origin HEAD` then `gh pr create --base main --head "$(git branch --show-current)" --fill`; put "fixes #N" in the commit message or PR body so the issue is linked and closed on merge.
 - **Fix formatting:** Run `black` and `isort` with apply mode (no `--check-only`).
 
 ---
