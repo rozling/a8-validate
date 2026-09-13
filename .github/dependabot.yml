@@ -36,16 +36,18 @@ updates:
         update-types:
           - "version-update:semver-major"
 
-  # Enable version updates for GitHub Actions
+  # Group GitHub Actions updates on the portfolio schedule.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "sunday"
-      time: "09:00"
-    labels:
-      - "dependencies"
-      - "github-actions"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Tallinn"
+    open-pull-requests-limit: 2
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     commit-message:
-      prefix: "ci"
-      include: "scope"
+      prefix: "chore(actions)"
