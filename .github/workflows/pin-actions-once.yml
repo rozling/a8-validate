@@ -1,0 +1,40 @@
+name: Pin GitHub Actions once
+on: {push: {branches: [chore/standardize-github-actions]}}
+permissions: {contents: write}
+jobs:
+  pin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {ref: chore/standardize-github-actions}
+      - name: Pin external actions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          pins={'actions/checkout':('3d3c42e5aac5ba805825da76410c181273ba90b1','v7.0.1'),'actions/setup-python':('5fda3b95a4ea91299a34e894583c3862153e4b97','v7.0.0'),'actions/setup-node':('cdca7365b2dadb8b99dc07b327dc27df759c80b7','v7.0.0'),'actions/cache':('55cc8345863c7cc4c66a329aec7e433d2d1c52a9','v6.1.0'),'actions/cache/restore':('55cc8345863c7cc4c66a329aec7e433d2d1c52a9','v6.1.0'),'actions/cache/save':('55cc8345863c7cc4c66a329aec7e433d2d1c52a9','v6.1.0'),'actions/upload-artifact':('043fb46d1a93c77aae656e7c1c64a875d1fc6a0a','v7.0.1'),'actions/download-artifact':('3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c','v8.0.1'),'actions/create-github-app-token':('bcd2ba49218906704ab6c1aa796996da409d3eb1','v3.2.0'),'astral-sh/setup-uv':('bec219d24cd3e171d82865faccec33120bb574f4','v10.1.0'),'dorny/paths-filter':('3bd38cc694a599310d33c96ebf3bc41001fab4a9','v4.0.3'),'docker/setup-buildx-action':('d08875ae2c21e86587fbf87afafd3cd48a7d93ee','v4.3.0'),'docker/build-push-action':('4ad445eaf622303ed09cdb8b6c952fbd5d63d002','v7.3.0'),'docker/login-action':('1a745aa6bf535d4040b92dc8f707fef44e06d9ac','v4.6.0'),'hashicorp/setup-terraform':('f7ec1e30f5585f13aeb896cbf68263829a854a5a','v4.0.1'),'opentofu/setup-opentofu':('a6b2e3610649f7f3fe1c7efad009ee089c4eeb0c','v2.0.2')}
+          files=[]
+          for root in map(Path,['.github/workflows','.github/actions']):
+              if root.exists(): files += [p for p in root.rglob('*') if p.is_file() and p.suffix in {'.yml','.yaml'}]
+          for p in files:
+              if p.name=='pin-actions-once.yml': continue
+              s=p.read_text(); old=s
+              for a,(sha,v) in pins.items(): s=re.compile(rf'(^\s*uses:\s*{re.escape(a)}@)(?![0-9a-f]{{40}}(?:\s|$))[^\s#]+(?:\s+#.*)?$',re.M).sub(lambda m,sha=sha,v=v:f'{m.group(1)}{sha} # {v}',s)
+              if s!=old: p.write_text(s)
+          ext=re.compile(r'^\s*uses:\s*([^\s@]+)@([^\s#]+)',re.M); bad=[]
+          for p in files:
+              if p.name=='pin-actions-once.yml': continue
+              for a,r in ext.findall(p.read_text()):
+                  if a=='rozling/agent-baseline/.github/actions/sync-agent-baseline' and r=='v1': continue
+                  if not re.fullmatch(r'[0-9a-f]{40}',r): bad.append(f'{p}: {a}@{r}')
+          if bad: raise SystemExit('Unpinned external Actions remain:\n'+'\n'.join(bad))
+          PY
+      - name: Commit pins and remove one-shot workflow
+        run: |
+          rm .github/workflows/pin-actions-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github
+          git diff --cached --quiet && exit 0
+          git commit -m 'chore: pin GitHub Actions to immutable SHAs'
+          git push
