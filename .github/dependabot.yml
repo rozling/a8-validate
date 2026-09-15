@@ -37,15 +37,20 @@ updates:
           - "version-update:semver-major"
 
   # Enable version updates for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
     schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "09:00"
-    labels:
-      - "dependencies"
-      - "github-actions"
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Tallinn
+    open-pull-requests-limit: 2
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     commit-message:
-      prefix: "ci"
-      include: "scope"
+      prefix: chore(actions)
+    directory: /
+    labels:
+      - dependencies
+      - github-actions
