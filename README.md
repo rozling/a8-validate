@@ -4,8 +4,9 @@
 
 [![Tests](https://github.com/rozling/a8-validate/workflows/Tests/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/test.yml)
 [![Lint](https://github.com/rozling/a8-validate/workflows/Lint/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/lint.yml)
-[![Coverage](https://github.com/rozling/a8-validate/workflows/Coverage/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/coverage.yml)
 [![Security](https://github.com/rozling/a8-validate/workflows/Security/badge.svg)](https://github.com/rozling/a8-validate/actions/workflows/security.yml)
+
+The Ubuntu Tests job publishes an HTML coverage report as a workflow artifact.
 
 ### Features
 

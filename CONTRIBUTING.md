@@ -10,11 +10,10 @@ cd a8-validate
 
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-We keep runtime dependencies (`requirements.txt`) lean; the `requirements-dev.txt` file installs the formatting, linting, testing, and security tooling.
+We keep runtime dependencies (`requirements.txt`) lean. `requirements-test.txt` adds the test and coverage tools used by CI. `requirements-dev.txt` includes those plus formatting, linting, and security tools.
 
 ## Development Workflow
 
@@ -74,7 +73,7 @@ Before tagging a release:
 
 1. Ensure `CHANGELOG.md` has an entry for the release.
 2. Run the full test suite.
-3. Verify CI workflows (Tests, Lint, Coverage, Security) are green.
+3. Verify CI workflows (Tests, Lint, Security) are green. The Ubuntu Tests job also publishes the coverage report.
 4. Create a Git tag (e.g. `v1.0.0`) and push tags to GitHub.
 
 Thanks again for contributing! If you have questions, open an issue or start a discussion on GitHub.***
