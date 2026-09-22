@@ -1,0 +1,5 @@
+# Test and coverage dependencies for CI and local runs.
+-r requirements.txt
+pytest>=7.0.0
+pytest-cov>=4.1.0
+coverage>=7.3.0
