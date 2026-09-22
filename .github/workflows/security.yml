@@ -4,6 +4,8 @@ name: Security
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday
 
@@ -32,17 +34,13 @@ jobs:
       run: |
         safety check --file requirements.txt || true
 
-    - name: Install project dependencies first
-      run: |
-        pip install -r requirements.txt
-
     - name: Run pip-audit (fail on any vulnerability)
       run: |
-        pip-audit --desc
+        pip-audit -r requirements.txt --desc
 
     - name: Show detailed vulnerability information
       if: failure()
       run: |
         echo "Detailed vulnerability report:"
-        pip-audit --format json --desc | python3 -m json.tool || true
+        pip-audit -r requirements.txt --format json --desc | python3 -m json.tool || true
       continue-on-error: true
